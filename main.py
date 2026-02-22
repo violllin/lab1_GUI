@@ -4,7 +4,6 @@ from ui import CompilerUI
 
 def main():
     app = QApplication(sys.argv)
-
     window = CompilerUI()
     window.show()
     sys.exit(app.exec())
