@@ -1,5 +1,6 @@
 from PyQt6.QtWidgets import QFileDialog, QMessageBox
 from help_window import HelpWindow
+from PyQt6.QtGui import QFont
 
 class EditorLogic:
     def __init__(self, ui_window):
@@ -63,3 +64,17 @@ class EditorLogic:
     def show_help(self):
         self.help_dialog = HelpWindow(self.ui)
         self.help_dialog.show()
+
+    def zoom_in(self):
+        font = self.ui.editor.font()
+        font.setPointSize(font.pointSize() + 2)
+        self.ui.editor.setFont(font)
+        self.ui.results.setFont(font)
+
+    def zoom_out(self):
+        font = self.ui.editor.font()
+        new_size = font.pointSize() - 2
+        if new_size >= 6:
+            font.setPointSize(new_size)
+            self.ui.editor.setFont(font)
+            self.ui.results.setFont(font)

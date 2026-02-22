@@ -29,16 +29,23 @@ class AppActions:
         self.menu_help = QAction("Вызов справки", parent)
         self.menu_about = QAction("О программе", parent)
 
+        self.zoom_in_act = QAction(style.standardIcon(style.StandardPixmap.SP_ArrowUp), "Увеличить шрифт", parent)
+        self.zoom_out_act = QAction(style.standardIcon(style.StandardPixmap.SP_ArrowDown), "Уменьшить шрифт", parent)
+
         self.connect_actions(parent, logic)
+
 
     def connect_actions(self, parent, logic):
 
         for act in [self.new_act, self.menu_new]: act.triggered.connect(logic.file_new)
         for act in [self.open_act, self.menu_open]: act.triggered.connect(logic.file_open)
         for act in [self.save_act, self.menu_save]: act.triggered.connect(logic.file_save)
+
         self.menu_save_as.triggered.connect(logic.file_save_as)
         self.menu_exit.triggered.connect(parent.close)
         self.menu_delete.triggered.connect(parent.editor.clear)
+        self.zoom_in_act.triggered.connect(logic.zoom_in)
+        self.zoom_out_act.triggered.connect(logic.zoom_out)
 
         for act in [self.undo_act, self.menu_undo]: act.triggered.connect(parent.editor.undo)
         for act in [self.redo_act, self.menu_redo]: act.triggered.connect(parent.editor.redo)

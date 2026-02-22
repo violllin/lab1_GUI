@@ -71,3 +71,6 @@ class CompilerUI(QMainWindow):
         toolbar.addAction(self.actions.run_act)
         toolbar.addSeparator()
         toolbar.addActions([self.actions.help_act, self.actions.about_act])
+        toolbar.addSeparator()
+        toolbar.addAction(self.actions.zoom_in_act)
+        toolbar.addAction(self.actions.zoom_out_act)
