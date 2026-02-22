@@ -78,3 +78,19 @@ class EditorLogic:
             font.setPointSize(new_size)
             self.ui.editor.setFont(font)
             self.ui.results.setFont(font)
+
+    def file_open(self):
+        if self.maybe_save():
+            path, _ = QFileDialog.getOpenFileName(self.ui, "Открыть файл", "", "Text Files (*.txt);;All Files (*)")
+            if path:
+                self.load_file(path)
+    def load_file(self, path):
+        try:
+            with open(path, 'r', encoding='utf-8') as f:
+                content = f.read()
+                self.ui.editor.setPlainText(content)
+            self.current_path = path
+            self.ui.editor.document().setModified(False)
+            self.ui.statusBar().showMessage(f"Файл загружен: {path}")
+        except Exception as e:
+            QMessageBox.critical(self.ui, "Ошибка", f"Не удалось прочитать файл:\n{str(e)}")

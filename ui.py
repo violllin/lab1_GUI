@@ -11,6 +11,7 @@ class CompilerUI(QMainWindow):
         self.resize(900, 700)
 
         self.setup_text_areas()
+
         self.logic = EditorLogic(self)
         self.actions = AppActions(self, self.logic)
 
@@ -18,6 +19,9 @@ class CompilerUI(QMainWindow):
         self.setup_toolbar()
         self.setStatusBar(QStatusBar(self))
         self.editor.document().modificationChanged.connect(self.setWindowModified)
+
+        self.setAcceptDrops(True)
+        self.editor.setAcceptDrops(False)
 
     def setup_text_areas(self):
         self.splitter = QSplitter(Qt.Orientation.Vertical)
@@ -74,3 +78,16 @@ class CompilerUI(QMainWindow):
         toolbar.addSeparator()
         toolbar.addAction(self.actions.zoom_in_act)
         toolbar.addAction(self.actions.zoom_out_act)
+
+    def dragEnterEvent(self, event):
+        if event.mimeData().hasUrls():
+            event.accept()
+        else:
+            event.ignore()
+
+    def dropEvent(self, event):
+        urls = event.mimeData().urls()
+        if urls:
+            file_path = urls[0].toLocalFile()
+            if self.logic.maybe_save():
+                self.logic.load_file(file_path)
