@@ -1,4 +1,5 @@
 from PyQt6.QtWidgets import QFileDialog, QMessageBox
+from help_window import HelpWindow
 
 class EditorLogic:
     def __init__(self, ui_window):
@@ -53,7 +54,12 @@ class EditorLogic:
         return True
 
     def show_about(self):
-        QMessageBox.information(self.ui, "О программе", "")
+        about_text = (
+            "Текстовый редактор\n\n"
+            "Реализован функционал меню 'Справка' и 'Правка'"
+        )
+        QMessageBox.information(self.ui, "О программе", about_text)
 
     def show_help(self):
-        QMessageBox.information(self.ui, "Справка", "")
+        self.help_dialog = HelpWindow(self.ui)
+        self.help_dialog.show()
