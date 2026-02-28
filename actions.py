@@ -12,8 +12,10 @@ class AppActions:
         self.cut_act = QAction(style.standardIcon(style.StandardPixmap.SP_LineEditClearButton), "Вырезать", parent)
         self.paste_act = QAction(style.standardIcon(style.StandardPixmap.SP_FileDialogStart), "Вставить", parent)
         self.run_act = QAction(style.standardIcon(style.StandardPixmap.SP_MediaPlay), "Пуск", parent)
-        self.help_act = QAction(style.standardIcon(style.StandardPixmap.SP_TitleBarContextHelpButton), "Вызов справки", parent)
-        self.about_act = QAction(style.standardIcon(style.StandardPixmap.SP_MessageBoxInformation), "О программе", parent)
+        self.help_act = QAction(style.standardIcon(style.StandardPixmap.SP_TitleBarContextHelpButton), "Вызов справки",
+                                parent)
+        self.about_act = QAction(style.standardIcon(style.StandardPixmap.SP_MessageBoxInformation), "О программе",
+                                 parent)
 
         self.menu_new = QAction("Создать", parent)
         self.menu_new.setShortcut(QKeySequence.StandardKey.New)
@@ -47,22 +49,27 @@ class AppActions:
         self.connect_actions(parent, logic)
 
     def connect_actions(self, parent, logic):
-
         for act in [self.new_act, self.menu_new]: act.triggered.connect(logic.file_new)
         for act in [self.open_act, self.menu_open]: act.triggered.connect(logic.file_open)
         for act in [self.save_act, self.menu_save]: act.triggered.connect(logic.file_save)
-
         self.menu_save_as.triggered.connect(logic.file_save_as)
         self.menu_exit.triggered.connect(parent.close)
-        self.menu_delete.triggered.connect(parent.editor.clear)
+
+        self.menu_delete.triggered.connect(
+            lambda: parent.get_current_editor().clear() if parent.get_current_editor() else None)
+
+        for act in [self.undo_act, self.menu_undo]:
+            act.triggered.connect(lambda: parent.get_current_editor().undo() if parent.get_current_editor() else None)
+        for act in [self.redo_act, self.menu_redo]:
+            act.triggered.connect(lambda: parent.get_current_editor().redo() if parent.get_current_editor() else None)
+        for act in [self.cut_act, self.menu_cut]:
+            act.triggered.connect(lambda: parent.get_current_editor().cut() if parent.get_current_editor() else None)
+        for act in [self.copy_act, self.menu_copy]:
+            act.triggered.connect(lambda: parent.get_current_editor().copy() if parent.get_current_editor() else None)
+        for act in [self.paste_act, self.menu_paste]:
+            act.triggered.connect(lambda: parent.get_current_editor().paste() if parent.get_current_editor() else None)
+
         self.zoom_in_act.triggered.connect(logic.zoom_in)
         self.zoom_out_act.triggered.connect(logic.zoom_out)
-
-        for act in [self.undo_act, self.menu_undo]: act.triggered.connect(parent.editor.undo)
-        for act in [self.redo_act, self.menu_redo]: act.triggered.connect(parent.editor.redo)
-        for act in [self.cut_act, self.menu_cut]: act.triggered.connect(parent.editor.cut)
-        for act in [self.copy_act, self.menu_copy]: act.triggered.connect(parent.editor.copy)
-        for act in [self.paste_act, self.menu_paste]: act.triggered.connect(parent.editor.paste)
-
         for act in [self.help_act, self.menu_help]: act.triggered.connect(logic.show_help)
         for act in [self.about_act, self.menu_about]: act.triggered.connect(logic.show_about)
