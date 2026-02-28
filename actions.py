@@ -1,4 +1,4 @@
-from PyQt6.QtGui import QAction
+from PyQt6.QtGui import QAction, QKeySequence
 class AppActions:
     def __init__(self, parent, logic):
         style = parent.style()
@@ -15,22 +15,36 @@ class AppActions:
         self.help_act = QAction(style.standardIcon(style.StandardPixmap.SP_TitleBarContextHelpButton), "Вызов справки", parent)
         self.about_act = QAction(style.standardIcon(style.StandardPixmap.SP_MessageBoxInformation), "О программе", parent)
 
+
         self.menu_new = QAction("Создать", parent)
+        self.menu_new.setShortcut(QKeySequence.StandardKey.New)
         self.menu_open = QAction("Открыть", parent)
+        self.menu_open.setShortcut(QKeySequence.StandardKey.Open)
         self.menu_save = QAction("Сохранить", parent)
+        self.menu_save.setShortcut(QKeySequence.StandardKey.Save)
         self.menu_save_as = QAction("Сохранить как", parent)
+        self.menu_save_as.setShortcut("Ctrl+Shift+S")
         self.menu_exit = QAction("Выход", parent)
+        self.menu_exit.setShortcut("Alt+F4")
         self.menu_undo = QAction("Отменить", parent)
+        self.menu_undo.setShortcut(QKeySequence.StandardKey.Undo)
         self.menu_redo = QAction("Повторить", parent)
+        self.menu_redo.setShortcut(QKeySequence.StandardKey.Redo)
         self.menu_cut = QAction("Вырезать", parent)
+        self.menu_cut.setShortcut(QKeySequence.StandardKey.Cut)
         self.menu_copy = QAction("Копировать", parent)
+        self.menu_copy.setShortcut(QKeySequence.StandardKey.Copy)
         self.menu_paste = QAction("Вставить", parent)
+        self.menu_paste.setShortcut(QKeySequence.StandardKey.Paste)
         self.menu_delete = QAction("Удалить", parent)
+        self.menu_delete.setShortcut(QKeySequence.StandardKey.Delete)
         self.menu_help = QAction("Вызов справки", parent)
+        self.menu_help.setShortcut('F1')
         self.menu_about = QAction("О программе", parent)
 
         self.zoom_in_act = QAction(style.standardIcon(style.StandardPixmap.SP_ArrowUp), "Увеличить шрифт", parent)
         self.zoom_out_act = QAction(style.standardIcon(style.StandardPixmap.SP_ArrowDown), "Уменьшить шрифт", parent)
+
 
         self.connect_actions(parent, logic)
 
