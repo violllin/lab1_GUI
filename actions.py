@@ -15,7 +15,6 @@ class AppActions:
         self.help_act = QAction(style.standardIcon(style.StandardPixmap.SP_TitleBarContextHelpButton), "Вызов справки", parent)
         self.about_act = QAction(style.standardIcon(style.StandardPixmap.SP_MessageBoxInformation), "О программе", parent)
 
-
         self.menu_new = QAction("Создать", parent)
         self.menu_new.setShortcut(QKeySequence.StandardKey.New)
         self.menu_open = QAction("Открыть", parent)
@@ -45,9 +44,7 @@ class AppActions:
         self.zoom_in_act = QAction(style.standardIcon(style.StandardPixmap.SP_ArrowUp), "Увеличить шрифт", parent)
         self.zoom_out_act = QAction(style.standardIcon(style.StandardPixmap.SP_ArrowDown), "Уменьшить шрифт", parent)
 
-
         self.connect_actions(parent, logic)
-
 
     def connect_actions(self, parent, logic):
 

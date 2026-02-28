@@ -1,6 +1,5 @@
 from PyQt6.QtWidgets import QFileDialog, QMessageBox
 from help_window import HelpWindow
-from PyQt6.QtGui import QFont
 
 class EditorLogic:
     def __init__(self, ui_window):
@@ -12,22 +11,36 @@ class EditorLogic:
             self.ui.editor.clear()
             self.current_path = None
             self.ui.editor.document().setModified(False)
+            self.ui.statusBar().showMessage("Создан новый файл", 3000)
 
     def file_open(self):
         if self.maybe_save():
             path, _ = QFileDialog.getOpenFileName(self.ui, "Открыть файл", "", "Text Files (*.txt);;All Files (*)")
             if path:
-                with open(path, 'r', encoding='utf-8') as f:
-                    self.ui.editor.setPlainText(f.read())
-                self.current_path = path
-                self.ui.editor.document().setModified(False)
+                self.load_file(path)
+
+    def load_file(self, path):
+        try:
+            with open(path, 'r', encoding='utf-8') as f:
+                content = f.read()
+                self.ui.editor.setPlainText(content)
+            self.current_path = path
+            self.ui.editor.document().setModified(False)
+            self.ui.statusBar().showMessage(f"Файл открыт: {path}", 3000)
+        except Exception as e:
+            QMessageBox.critical(self.ui, "Ошибка", f"Не удалось прочитать файл:\n{str(e)}")
 
     def file_save(self):
         if self.current_path:
-            with open(self.current_path, 'w', encoding='utf-8') as f:
-                f.write(self.ui.editor.toPlainText())
-            self.ui.editor.document().setModified(False)
-            return True
+            try:
+                with open(self.current_path, 'w', encoding='utf-8') as f:
+                    f.write(self.ui.editor.toPlainText())
+                self.ui.editor.document().setModified(False)
+                self.ui.statusBar().showMessage(f"Сохранено: {self.current_path}", 3000)
+                return True
+            except Exception as e:
+                self.ui.statusBar().showMessage("Ошибка при сохранении", 5000)
+                return False
         else:
             return self.file_save_as()
 
@@ -70,6 +83,7 @@ class EditorLogic:
         font.setPointSize(font.pointSize() + 2)
         self.ui.editor.setFont(font)
         self.ui.results.setFont(font)
+        self.ui.statusBar().showMessage(f"Масштаб увеличен: {font.pointSize()}pt", 2000)
 
     def zoom_out(self):
         font = self.ui.editor.font()
@@ -78,19 +92,4 @@ class EditorLogic:
             font.setPointSize(new_size)
             self.ui.editor.setFont(font)
             self.ui.results.setFont(font)
-
-    def file_open(self):
-        if self.maybe_save():
-            path, _ = QFileDialog.getOpenFileName(self.ui, "Открыть файл", "", "Text Files (*.txt);;All Files (*)")
-            if path:
-                self.load_file(path)
-    def load_file(self, path):
-        try:
-            with open(path, 'r', encoding='utf-8') as f:
-                content = f.read()
-                self.ui.editor.setPlainText(content)
-            self.current_path = path
-            self.ui.editor.document().setModified(False)
-            self.ui.statusBar().showMessage(f"Файл загружен: {path}")
-        except Exception as e:
-            QMessageBox.critical(self.ui, "Ошибка", f"Не удалось прочитать файл:\n{str(e)}")
+            self.ui.statusBar().showMessage(f"Масштаб уменьшен: {new_size}pt", 2000)

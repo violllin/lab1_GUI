@@ -1,8 +1,9 @@
-from PyQt6.QtWidgets import QMainWindow, QTextEdit, QSplitter, QToolBar, QStatusBar
+from PyQt6.QtWidgets import QMainWindow, QTextEdit, QSplitter, QToolBar, QStatusBar, QLabel
 from PyQt6.QtCore import Qt, QSize
 from PyQt6.QtGui import QFont
 from actions import AppActions
 from logic import EditorLogic
+
 
 class CompilerUI(QMainWindow):
     def __init__(self):
@@ -17,8 +18,10 @@ class CompilerUI(QMainWindow):
 
         self.setup_menu()
         self.setup_toolbar()
-        self.setStatusBar(QStatusBar(self))
+        self.setup_status_bar()
+
         self.editor.document().modificationChanged.connect(self.setWindowModified)
+        self.editor.cursorPositionChanged.connect(self.update_cursor_info)
 
         self.setAcceptDrops(True)
         self.editor.setAcceptDrops(False)
@@ -35,6 +38,18 @@ class CompilerUI(QMainWindow):
         self.splitter.setSizes([500, 200])
         self.setCentralWidget(self.splitter)
 
+    def setup_status_bar(self):
+        self.status = QStatusBar()
+        self.setStatusBar(self.status)
+        self.cursor_label = QLabel("Стр: 1, Стлб: 1")
+        self.status.addPermanentWidget(self.cursor_label)
+
+    def update_cursor_info(self):
+        cursor = self.editor.textCursor()
+        line = cursor.blockNumber() + 1
+        col = cursor.columnNumber() + 1
+        self.cursor_label.setText(f"Стр: {line}, Стлб: {col}")
+
     def closeEvent(self, event):
         if self.logic.maybe_save():
             event.accept()
@@ -44,17 +59,19 @@ class CompilerUI(QMainWindow):
     def setup_menu(self):
         menu = self.menuBar()
         file_m = menu.addMenu("Файл")
-        file_m.addActions([self.actions.menu_new, self.actions.menu_open, self.actions.menu_save, self.actions.menu_save_as])
+        file_m.addActions(
+            [self.actions.menu_new, self.actions.menu_open, self.actions.menu_save, self.actions.menu_save_as])
         file_m.addAction(self.actions.menu_exit)
 
         edit_m = menu.addMenu("Правка")
         edit_m.addActions([self.actions.menu_undo, self.actions.menu_redo])
-        edit_m.addActions([self.actions.menu_cut, self.actions.menu_copy, self.actions.menu_paste, self.actions.menu_delete])
-
+        edit_m.addActions(
+            [self.actions.menu_cut, self.actions.menu_copy, self.actions.menu_paste, self.actions.menu_delete])
         edit_m.addAction("Выделить все", self.editor.selectAll)
 
         text_m = menu.addMenu("Текст")
-        for item in ["Постановка задачи", "Грамматика", "Метод анализа", "Тестовый пример", "Список литературы", "Исходный код программы"]:
+        for item in ["Постановка задачи", "Грамматика", "Метод анализа", "Тестовый пример", "Список литературы",
+                     "Исходный код программы"]:
             text_m.addAction(item)
 
         menu.addMenu("Пуск")
