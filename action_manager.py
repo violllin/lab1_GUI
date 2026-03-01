@@ -46,6 +46,7 @@ class ActionManager:
         self.menu_delete = QAction("", window)
         self.menu_delete.setShortcut(QKeySequence.StandardKey.Delete)
         self.menu_select_all = QAction("", window)
+        self.menu_select_all.setShortcut(QKeySequence.StandardKey.SelectAll)
 
         self.menu_help = QAction("", window)
         self.menu_help.setShortcut('F1')
