@@ -1,4 +1,5 @@
 from PyQt6.QtGui import QAction, QKeySequence
+from translations import STRINGS
 
 class ActionManager:
     def __init__(self, window, controller):
@@ -6,51 +7,83 @@ class ActionManager:
         self.win = window
         self.ctrl = controller
 
-        self.new_act = QAction(style.standardIcon(style.StandardPixmap.SP_FileIcon), "Создать", window)
-        self.open_act = QAction(style.standardIcon(style.StandardPixmap.SP_DialogOpenButton), "Открыть", window)
-        self.save_act = QAction(style.standardIcon(style.StandardPixmap.SP_DialogSaveButton), "Сохранить", window)
-        self.undo_act = QAction(style.standardIcon(style.StandardPixmap.SP_ArrowBack), "Отменить", window)
-        self.redo_act = QAction(style.standardIcon(style.StandardPixmap.SP_ArrowForward), "Повторить", window)
-        self.copy_act = QAction(style.standardIcon(style.StandardPixmap.SP_FileLinkIcon), "Копировать", window)
-        self.cut_act = QAction(style.standardIcon(style.StandardPixmap.SP_LineEditClearButton), "Вырезать", window)
-        self.paste_act = QAction(style.standardIcon(style.StandardPixmap.SP_FileDialogStart), "Вставить", window)
-        self.run_act = QAction(style.standardIcon(style.StandardPixmap.SP_MediaPlay), "Пуск", window)
-        self.help_act = QAction(style.standardIcon(style.StandardPixmap.SP_TitleBarContextHelpButton), "Справка",
-                                window)
-        self.about_act = QAction(style.standardIcon(style.StandardPixmap.SP_MessageBoxInformation), "О программе")
-        self.zoom_in_act = QAction(style.standardIcon(style.StandardPixmap.SP_ArrowUp), "Увеличить шрифт", window)
-        self.zoom_out_act = QAction(style.standardIcon(style.StandardPixmap.SP_ArrowDown), "Уменьшить шрифт", window)
+        self.new_act = QAction(style.standardIcon(style.StandardPixmap.SP_FileIcon), "", window)
+        self.open_act = QAction(style.standardIcon(style.StandardPixmap.SP_DialogOpenButton), "", window)
+        self.save_act = QAction(style.standardIcon(style.StandardPixmap.SP_DialogSaveButton), "", window)
+        self.undo_act = QAction(style.standardIcon(style.StandardPixmap.SP_ArrowBack), "", window)
+        self.redo_act = QAction(style.standardIcon(style.StandardPixmap.SP_ArrowForward), "", window)
+        self.copy_act = QAction(style.standardIcon(style.StandardPixmap.SP_FileLinkIcon), "", window)
+        self.cut_act = QAction(style.standardIcon(style.StandardPixmap.SP_LineEditClearButton), "", window)
+        self.paste_act = QAction(style.standardIcon(style.StandardPixmap.SP_FileDialogStart), "", window)
+        self.run_act = QAction(style.standardIcon(style.StandardPixmap.SP_MediaPlay), "", window)
+        self.help_act = QAction(style.standardIcon(style.StandardPixmap.SP_TitleBarContextHelpButton), "", window)
+        self.about_act = QAction(style.standardIcon(style.StandardPixmap.SP_MessageBoxInformation), "", window)
+        self.zoom_in_act = QAction(style.standardIcon(style.StandardPixmap.SP_ArrowUp), "", window)
+        self.zoom_out_act = QAction(style.standardIcon(style.StandardPixmap.SP_ArrowDown), "", window)
 
-        self.menu_new = QAction("Создать", window)
+        self.menu_new = QAction("", window)
         self.menu_new.setShortcut(QKeySequence.StandardKey.New)
-        self.menu_open = QAction("Открыть", window)
+        self.menu_open = QAction("", window)
         self.menu_open.setShortcut(QKeySequence.StandardKey.Open)
-        self.menu_save = QAction("Сохранить", window)
+        self.menu_save = QAction("", window)
         self.menu_save.setShortcut(QKeySequence.StandardKey.Save)
-        self.menu_save_as = QAction("Сохранить как", window)
+        self.menu_save_as = QAction("", window)
         self.menu_save_as.setShortcut("Ctrl+Shift+S")
-        self.menu_exit = QAction("Выход", window)
+        self.menu_exit = QAction("", window)
         self.menu_exit.setShortcut("Alt+F4")
-        self.menu_run_act = QAction("Пуск", window)
+        self.menu_run_act = QAction("", window)
 
-        self.menu_undo = QAction("Отменить", window)
+        self.menu_undo = QAction("", window)
         self.menu_undo.setShortcut(QKeySequence.StandardKey.Undo)
-        self.menu_redo = QAction("Повторить", window)
+        self.menu_redo = QAction("", window)
         self.menu_redo.setShortcut(QKeySequence.StandardKey.Redo)
-        self.menu_cut = QAction("Вырезать", window)
+        self.menu_cut = QAction("", window)
         self.menu_cut.setShortcut(QKeySequence.StandardKey.Cut)
-        self.menu_copy = QAction("Копировать", window)
+        self.menu_copy = QAction("", window)
         self.menu_copy.setShortcut(QKeySequence.StandardKey.Copy)
-        self.menu_paste = QAction("Вставить", window)
+        self.menu_paste = QAction("", window)
         self.menu_paste.setShortcut(QKeySequence.StandardKey.Paste)
-        self.menu_delete = QAction("Удалить", window)
+        self.menu_delete = QAction("", window)
         self.menu_delete.setShortcut(QKeySequence.StandardKey.Delete)
+        self.menu_select_all = QAction("", window)
 
-        self.menu_help = QAction("Вызов справки", window)
+        self.menu_help = QAction("", window)
         self.menu_help.setShortcut('F1')
-        self.menu_about = QAction("О программе", window)
+        self.menu_about = QAction("", window)
 
+        self.retranslate_actions("ru")
         self._connect_signals()
+
+    def retranslate_actions(self, lang):
+        s = STRINGS[lang]
+        self.new_act.setText(s["action_new"])
+        self.open_act.setText(s["action_open"])
+        self.save_act.setText(s["action_save"])
+        self.undo_act.setText(s["action_undo"])
+        self.redo_act.setText(s["action_redo"])
+        self.copy_act.setText(s["action_copy"])
+        self.cut_act.setText(s["action_cut"])
+        self.paste_act.setText(s["action_paste"])
+        self.run_act.setText(s["menu_run"])
+        self.help_act.setText(s["menu_help"])
+        self.zoom_in_act.setText(s["action_zoom_in"])
+        self.zoom_out_act.setText(s["action_zoom_out"])
+
+        self.menu_new.setText(s["action_new"])
+        self.menu_open.setText(s["action_open"])
+        self.menu_save.setText(s["action_save"])
+        self.menu_save_as.setText(s["action_save_as"])
+        self.menu_exit.setText(s["action_exit"])
+        self.menu_run_act.setText(s["menu_run"])
+        self.menu_undo.setText(s["action_undo"])
+        self.menu_redo.setText(s["action_redo"])
+        self.menu_cut.setText(s["action_cut"])
+        self.menu_copy.setText(s["action_copy"])
+        self.menu_paste.setText(s["action_paste"])
+        self.menu_delete.setText(s["action_delete"])
+        self.menu_select_all.setText(s["action_select_all"])
+        self.menu_help.setText(s["action_help"])
+        self.menu_about.setText(s["action_about"])
 
     def _connect_signals(self):
         self.new_act.triggered.connect(self.ctrl.file_new)
@@ -61,31 +94,18 @@ class ActionManager:
         self.menu_save.triggered.connect(self.ctrl.file_save)
         self.menu_save_as.triggered.connect(self.ctrl.file_save_as)
         self.menu_exit.triggered.connect(self.win.close)
-
-        self.menu_delete.triggered.connect(
-            lambda: self.win.get_current_editor().clear() if self.win.get_current_editor() else None)
-        self.undo_act.triggered.connect(
-            lambda: self.win.get_current_editor().undo() if self.win.get_current_editor() else None)
-        self.menu_undo.triggered.connect(
-            lambda: self.win.get_current_editor().undo() if self.win.get_current_editor() else None)
-        self.redo_act.triggered.connect(
-            lambda: self.win.get_current_editor().redo() if self.win.get_current_editor() else None)
-        self.menu_redo.triggered.connect(
-            lambda: self.win.get_current_editor().redo() if self.win.get_current_editor() else None)
-
-        self.copy_act.triggered.connect(
-            lambda: self.win.get_current_editor().copy() if self.win.get_current_editor() else None)
-        self.menu_copy.triggered.connect(
-            lambda: self.win.get_current_editor().copy() if self.win.get_current_editor() else None)
-        self.cut_act.triggered.connect(
-            lambda: self.win.get_current_editor().cut() if self.win.get_current_editor() else None)
-        self.menu_cut.triggered.connect(
-            lambda: self.win.get_current_editor().cut() if self.win.get_current_editor() else None)
-        self.paste_act.triggered.connect(
-            lambda: self.win.get_current_editor().paste() if self.win.get_current_editor() else None)
-        self.menu_paste.triggered.connect(
-            lambda: self.win.get_current_editor().paste() if self.win.get_current_editor() else None)
-
+        self.menu_delete.triggered.connect(lambda: self.win.get_current_editor().clear() if self.win.get_current_editor() else None)
+        self.undo_act.triggered.connect(lambda: self.win.get_current_editor().undo() if self.win.get_current_editor() else None)
+        self.menu_undo.triggered.connect(lambda: self.win.get_current_editor().undo() if self.win.get_current_editor() else None)
+        self.redo_act.triggered.connect(lambda: self.win.get_current_editor().redo() if self.win.get_current_editor() else None)
+        self.menu_redo.triggered.connect(lambda: self.win.get_current_editor().redo() if self.win.get_current_editor() else None)
+        self.copy_act.triggered.connect(lambda: self.win.get_current_editor().copy() if self.win.get_current_editor() else None)
+        self.menu_copy.triggered.connect(lambda: self.win.get_current_editor().copy() if self.win.get_current_editor() else None)
+        self.cut_act.triggered.connect(lambda: self.win.get_current_editor().cut() if self.win.get_current_editor() else None)
+        self.menu_cut.triggered.connect(lambda: self.win.get_current_editor().cut() if self.win.get_current_editor() else None)
+        self.paste_act.triggered.connect(lambda: self.win.get_current_editor().paste() if self.win.get_current_editor() else None)
+        self.menu_paste.triggered.connect(lambda: self.win.get_current_editor().paste() if self.win.get_current_editor() else None)
+        self.menu_select_all.triggered.connect(lambda: self.win.get_current_editor().selectAll() if self.win.get_current_editor() else None)
         self.run_act.triggered.connect(self.ctrl.run_program)
         self.zoom_in_act.triggered.connect(self.ctrl.zoom_in)
         self.zoom_out_act.triggered.connect(self.ctrl.zoom_out)

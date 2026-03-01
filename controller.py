@@ -2,50 +2,43 @@ import os
 from PyQt6.QtWidgets import QFileDialog, QMessageBox, QTableWidgetItem
 from PyQt6.QtCore import Qt
 from help_window import HelpWindow
+from translations import STRINGS
 
 class EditorController:
     def __init__(self, main_window):
         self.ui = main_window
+        self.lang = "ru"
 
     def run_program(self):
         self.ui.output_panel.console_output.clear()
         self.ui.output_panel.errors_output.setRowCount(0)
-
         editor = self.ui.get_current_editor()
         if not editor: return
-
         code = editor.toPlainText()
-        file_path = editor.property("file_path") or "Новый файл"
-
+        file_path = editor.property("file_path") or ("Новый файл" if self.lang == "ru" else "New File")
         lines = code.split('\n')
         for i, line_text in enumerate(lines):
             if "error" in line_text.lower():
-                self.add_error_to_table(file_path, i + 1, "Ошибка")
+                self.add_error_to_table(file_path, i + 1, "Ошибка" if self.lang == "ru" else "Error")
 
     def add_error_to_table(self, path, line, message):
         table = self.ui.output_panel.errors_output
         row = table.rowCount()
         table.insertRow(row)
-
-        items = [
-            QTableWidgetItem(str(row + 1)),
-            QTableWidgetItem(str(path)),
-            QTableWidgetItem(str(line)),
-            QTableWidgetItem(message)
-        ]
-
+        items = [QTableWidgetItem(str(row + 1)), QTableWidgetItem(str(path)),
+                 QTableWidgetItem(str(line)), QTableWidgetItem(message)]
         items[0].setTextAlignment(Qt.AlignmentFlag.AlignCenter)
         items[2].setTextAlignment(Qt.AlignmentFlag.AlignCenter)
-
         for col, item in enumerate(items):
             table.setItem(row, col, item)
 
     def file_new(self):
-        self.ui.add_new_tab()
-        self.ui.statusBar().showMessage("Создан новый файл", 3000)
+        title = STRINGS[self.lang]["action_new"]
+        self.ui.add_new_tab(title=title)
+        self.ui.statusBar().showMessage(STRINGS[self.lang]["msg_new_file"], 3000)
 
     def file_open(self):
-        paths, _ = QFileDialog.getOpenFileNames(self.ui, "Открыть файлы", "", "Text Files (*.txt);;All Files (*)")
+        paths, _ = QFileDialog.getOpenFileNames(self.ui, "Open Files", "", "Text Files (*.txt);;All Files (*)")
         for path in paths:
             if path: self.load_file(path)
 
@@ -54,9 +47,8 @@ class EditorController:
             with open(path, 'r', encoding='utf-8') as f:
                 content = f.read()
             self.ui.add_new_tab(content, os.path.basename(path), path)
-            self.ui.statusBar().showMessage(f"Файл открыт: {path}", 3000)
         except Exception as e:
-            QMessageBox.critical(self.ui, "Ошибка", f"Не удалось прочитать файл:\n{str(e)}")
+            QMessageBox.critical(self.ui, "Error", f"{STRINGS[self.lang]['err_read']}:\n{str(e)}")
 
     def file_save(self):
         editor = self.ui.get_current_editor()
@@ -68,18 +60,14 @@ class EditorController:
                     f.write(editor.toPlainText())
                 editor.document().setModified(False)
                 self.ui.update_tab_title(editor)
-                self.ui.statusBar().showMessage(f"Сохранено: {path}", 3000)
                 return True
-            except Exception as e:
-                self.ui.statusBar().showMessage("Ошибка при сохранении", 5000)
-                return False
-        else:
-            return self.file_save_as()
+            except: return False
+        return self.file_save_as()
 
     def file_save_as(self):
         editor = self.ui.get_current_editor()
         if not editor: return False
-        path, _ = QFileDialog.getSaveFileName(self.ui, "Сохранить как", "", "Text Files (*.txt);;All Files (*)")
+        path, _ = QFileDialog.getSaveFileName(self.ui, "Save As", "", "Text Files (*.txt);;All Files (*)")
         if path:
             editor.setProperty("file_path", path)
             self.ui.tabs.setTabText(self.ui.tabs.indexOf(editor), os.path.basename(path))
@@ -90,14 +78,12 @@ class EditorController:
         editor = self.ui.tabs.widget(index)
         if not editor.document().isModified(): return True
         self.ui.tabs.setCurrentIndex(index)
-        ret = QMessageBox.question(self.ui, "Сохранить изменения?",
-                                   f"В файле '{self.ui.tabs.tabText(index)}' есть изменения. Сохранить их?",
+        s = STRINGS[self.lang]
+        ret = QMessageBox.question(self.ui, s["msg_save_change"],
+                                   s["msg_save_desc"].format(self.ui.tabs.tabText(index)),
                                    QMessageBox.StandardButton.Save | QMessageBox.StandardButton.Discard | QMessageBox.StandardButton.Cancel)
-        if ret == QMessageBox.StandardButton.Save:
-            return self.file_save()
-        elif ret == QMessageBox.StandardButton.Cancel:
-            return False
-        return True
+        if ret == QMessageBox.StandardButton.Save: return self.file_save()
+        return ret != QMessageBox.StandardButton.Cancel
 
     def maybe_save_all(self):
         for i in range(self.ui.tabs.count() - 1, -1, -1):
@@ -105,10 +91,12 @@ class EditorController:
         return True
 
     def show_about(self):
-        QMessageBox.information(self.ui, "О программе", "Текстовый редактор\n\nРеализован функционал вкладок")
+        title = STRINGS[self.lang]["action_about"]
+        msg = "Text Editor\nTab functionality implemented" if self.lang == "en" else "Текстовый редактор\nРеализован функционал вкладок"
+        QMessageBox.information(self.ui, title, msg)
 
     def show_help(self):
-        self.help_window = HelpWindow(self.ui)
+        self.help_window = HelpWindow(self.ui, self.lang)
         self.help_window.show()
 
     def zoom_in(self):
