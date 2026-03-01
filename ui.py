@@ -1,4 +1,5 @@
-from PyQt6.QtWidgets import (QMainWindow, QTextEdit, QSplitter, QToolBar, QStatusBar, QLabel, QTabWidget, QPlainTextEdit, QWidget)
+from PyQt6.QtWidgets import (QMainWindow, QTextEdit, QSplitter, QToolBar, QStatusBar, QLabel, QTabWidget, QPlainTextEdit, QWidget,
+                             QTableWidget, QHeaderView, QAbstractItemView)
 from PyQt6.QtCore import Qt, QSize, QRect
 from PyQt6.QtGui import QFont, QPainter, QColor
 from actions import AppActions
@@ -9,10 +10,8 @@ class LineNumberArea(QWidget):
     def __init__(self, editor):
         super().__init__(editor)
         self.codeEditor = editor
-
     def sizeHint(self):
         return QSize(self.codeEditor.line_number_area_width(), 0)
-
     def paintEvent(self, event):
         self.codeEditor.line_number_area_paint_event(event)
 
@@ -70,6 +69,7 @@ class CodeEditor(QPlainTextEdit):
             bottom = top + round(self.blockBoundingRect(block).height())
             block_number += 1
 
+
 class CompilerUI(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -101,9 +101,19 @@ class CompilerUI(QMainWindow):
         self.console_output.setReadOnly(True)
         self.console_output.setFont(QFont("Courier New", 11))
 
-        self.errors_output = QTextEdit()
-        self.errors_output.setReadOnly(True)
-        self.errors_output.setFont(QFont("Courier New", 11))
+        self.errors_output = QTableWidget()
+        self.errors_output.setColumnCount(4)
+        self.errors_output.setHorizontalHeaderLabels(["№", "Путь к файлу", "Линия", "Сообщение"])
+
+        self.errors_output.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
+        self.errors_output.verticalHeader().setVisible(False)
+
+        header = self.errors_output.horizontalHeader()
+        header.setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
+        header.setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
+        header.setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
+        header.setSectionResizeMode(3, QHeaderView.ResizeMode.Stretch)
+        header.setDefaultAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
 
         self.result_tabs.addTab(self.console_output, "Вывод")
         self.result_tabs.addTab(self.errors_output, "Ошибки")
@@ -119,12 +129,9 @@ class CompilerUI(QMainWindow):
         editor.setPlainText(content)
         editor.setAcceptDrops(False)
         editor.setProperty("file_path", file_path)
-
         editor.highlighter = PythonHighlighter(editor.document())
-
         editor.document().modificationChanged.connect(lambda: self.update_tab_title(editor))
         editor.cursorPositionChanged.connect(self.update_cursor_info)
-
         index = self.tabs.addTab(editor, title)
         self.tabs.setCurrentIndex(index)
         return editor
@@ -176,21 +183,17 @@ class CompilerUI(QMainWindow):
         file_m.addActions(
             [self.actions.menu_new, self.actions.menu_open, self.actions.menu_save, self.actions.menu_save_as])
         file_m.addAction(self.actions.menu_exit)
-
         edit_m = menu.addMenu("Правка")
         edit_m.addActions([self.actions.menu_undo, self.actions.menu_redo])
         edit_m.addActions(
             [self.actions.menu_cut, self.actions.menu_copy, self.actions.menu_paste, self.actions.menu_delete])
         edit_m.addAction("Выделить все",
                          lambda: self.get_current_editor().selectAll() if self.get_current_editor() else None)
-
         text_m = menu.addMenu("Текст")
         for item in ["Постановка задачи", "Грамматика", "Метод анализа", "Тестовый пример", "Список литературы",
                      "Исходный код программы"]:
             text_m.addAction(item)
-
-        menu.addMenu("Пуск")
-
+        menu.addMenu("Пуск").addAction(self.actions.run_act)
         help_m = menu.addMenu("Справка")
         help_m.addActions([self.actions.menu_help, self.actions.menu_about])
 

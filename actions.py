@@ -73,3 +73,5 @@ class AppActions:
         self.zoom_out_act.triggered.connect(logic.zoom_out)
         for act in [self.help_act, self.menu_help]: act.triggered.connect(logic.show_help)
         for act in [self.about_act, self.menu_about]: act.triggered.connect(logic.show_about)
+
+        self.run_act.triggered.connect(logic.run_program)
