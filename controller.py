@@ -1,15 +1,15 @@
 import os
-from PyQt6.QtWidgets import QFileDialog, QMessageBox, QTextEdit, QTableWidgetItem
+from PyQt6.QtWidgets import QFileDialog, QMessageBox, QTableWidgetItem
 from PyQt6.QtCore import Qt
 from help_window import HelpWindow
 
-class EditorLogic:
-    def __init__(self, ui_window):
-        self.ui = ui_window
+class EditorController:
+    def __init__(self, main_window):
+        self.ui = main_window
 
     def run_program(self):
-        self.ui.console_output.clear()
-        self.ui.errors_output.setRowCount(0)
+        self.ui.output_panel.console_output.clear()
+        self.ui.output_panel.errors_output.setRowCount(0)
 
         editor = self.ui.get_current_editor()
         if not editor: return
@@ -17,30 +17,28 @@ class EditorLogic:
         code = editor.toPlainText()
         file_path = editor.property("file_path") or "Новый файл"
 
-        has_errors = False
         lines = code.split('\n')
-
         for i, line_text in enumerate(lines):
             if "error" in line_text.lower():
-                has_errors = True
                 self.add_error_to_table(file_path, i + 1, "Ошибка")
 
     def add_error_to_table(self, path, line, message):
-        row = self.ui.errors_output.rowCount()
-        self.ui.errors_output.insertRow(row)
+        table = self.ui.output_panel.errors_output
+        row = table.rowCount()
+        table.insertRow(row)
 
-        num_item = QTableWidgetItem(str(row + 1))
-        path_item = QTableWidgetItem(str(path))
-        line_item = QTableWidgetItem(str(line))
-        msg_item = QTableWidgetItem(message)
+        items = [
+            QTableWidgetItem(str(row + 1)),
+            QTableWidgetItem(str(path)),
+            QTableWidgetItem(str(line)),
+            QTableWidgetItem(message)
+        ]
 
-        num_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
-        line_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+        items[0].setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+        items[2].setTextAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        self.ui.errors_output.setItem(row, 0, num_item)
-        self.ui.errors_output.setItem(row, 1, path_item)
-        self.ui.errors_output.setItem(row, 2, line_item)
-        self.ui.errors_output.setItem(row, 3, msg_item)
+        for col, item in enumerate(items):
+            table.setItem(row, col, item)
 
     def file_new(self):
         self.ui.add_new_tab()
@@ -107,11 +105,11 @@ class EditorLogic:
         return True
 
     def show_about(self):
-        QMessageBox.information(self.ui, "О программе", "Текстовый редактор\n\nРеализован функционал вкладок и дополнительные функции")
+        QMessageBox.information(self.ui, "О программе", "Текстовый редактор\n\nРеализован функционал вкладок")
 
     def show_help(self):
-        self.help_dialog = HelpWindow(self.ui)
-        self.help_dialog.show()
+        self.help_window = HelpWindow(self.ui)
+        self.help_window.show()
 
     def zoom_in(self):
         editor = self.ui.get_current_editor()

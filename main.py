@@ -1,10 +1,10 @@
 import sys
 from PyQt6.QtWidgets import QApplication
-from ui import CompilerUI
+from app_window import MainWindow
 
 def main():
     app = QApplication(sys.argv)
-    window = CompilerUI()
+    window = MainWindow()
     window.show()
     sys.exit(app.exec())
 
