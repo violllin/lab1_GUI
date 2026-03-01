@@ -36,7 +36,7 @@ STRINGS = {
         "table_path": "Путь к файлу",
         "table_line": "Линия",
         "table_msg": "Сообщение",
-        "text_items": ["Постановка задачи", "Грамматика", "Метод анализа", "Тестовый пример", "Список литературы", "Исходный код"]
+        "text_items": ["Постановка задачи", "Грамматика", "Классификация грамматики", "Метод анализа", "Тестовый пример", "Список литературы", "Исходный код"]
     },
     "en": {
         "window_title": "Text Editor",
@@ -75,6 +75,6 @@ STRINGS = {
         "table_path": "File Path",
         "table_line": "Line",
         "table_msg": "Message",
-        "text_items": ["Task Problem", "Grammar", "Analysis Method", "Test Case", "References", "Source Code"]
+        "text_items": ["Task Problem", "Grammar", "Grammar Classification", "Analysis Method", "Test Case", "References", "Source Code"]
     }
 }

@@ -77,7 +77,10 @@ class MainWindow(QMainWindow):
              self.actions.menu_paste, self.actions.menu_delete, self.actions.menu_select_all])
 
         self.menu_text = menu.addMenu("")
-        menu.addAction(self.actions.menu_run_act)
+        self.menu_text.addActions(self.actions.text_actions)
+
+        self.menu_run = menu.addMenu("")
+        self.menu_run.addAction(self.actions.menu_run_act)
 
         self.menu_lang = menu.addMenu("")
         act_ru = self.menu_lang.addAction("Русский")

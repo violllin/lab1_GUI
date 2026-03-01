@@ -52,6 +52,10 @@ class ActionManager:
         self.menu_help.setShortcut('F1')
         self.menu_about = QAction("", window)
 
+        self.text_actions = []
+        for _ in range(len(STRINGS["ru"]["text_items"])):
+            self.text_actions.append(QAction("", window))
+
         self.retranslate_actions("ru")
         self._connect_signals()
 
@@ -85,6 +89,10 @@ class ActionManager:
         self.menu_select_all.setText(s["action_select_all"])
         self.menu_help.setText(s["action_help"])
         self.menu_about.setText(s["action_about"])
+
+        for i, action in enumerate(self.text_actions):
+            if i < len(s["text_items"]):
+                action.setText(s["text_items"][i])
 
     def _connect_signals(self):
         self.new_act.triggered.connect(self.ctrl.file_new)
