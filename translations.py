@@ -7,7 +7,7 @@ STRINGS = {
         "menu_run": "Пуск",
         "menu_help": "Справка",
         "menu_lang": "Язык",
-        "action_new": "Создать",
+        "action_new": "Документ",
         "action_open": "Открыть",
         "action_save": "Сохранить",
         "action_save_as": "Сохранить как",
