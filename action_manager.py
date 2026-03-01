@@ -74,6 +74,9 @@ class ActionManager:
         self.zoom_in_act.setText(s["action_zoom_in"])
         self.zoom_out_act.setText(s["action_zoom_out"])
 
+        self.about_act.setText(s["action_about"])
+        self.about_act.setStatusTip(s["action_about"])
+
         self.menu_new.setText(s["action_new"])
         self.menu_open.setText(s["action_open"])
         self.menu_save.setText(s["action_save"])

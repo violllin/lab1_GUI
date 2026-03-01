@@ -153,6 +153,7 @@ class MainWindow(QMainWindow):
         toolbar.addActions([self.actions.copy_act, self.actions.cut_act, self.actions.paste_act])
         toolbar.addSeparator()
         toolbar.addAction(self.actions.run_act)
+        toolbar.addActions([self.actions.help_act, self.actions.about_act])
         toolbar.addActions([self.actions.zoom_in_act, self.actions.zoom_out_act])
 
     def closeEvent(self, event):
