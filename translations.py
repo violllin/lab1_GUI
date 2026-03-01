@@ -71,7 +71,7 @@ STRINGS = {
         "msg_save_change": "Save changes?",
         "msg_save_desc": "File '{}' has been modified. Save changes?",
         "err_read": "Could not read file",
-        "table_no": "#",
+        "table_no": "№",
         "table_path": "File Path",
         "table_line": "Line",
         "table_msg": "Message",

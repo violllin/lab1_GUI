@@ -104,6 +104,8 @@ class MainWindow(QMainWindow):
         editor.document().modificationChanged.connect(lambda: self.update_tab_title(editor))
         editor.cursorPositionChanged.connect(self.update_cursor_info)
 
+        editor.file_dropped.connect(self.controller.load_file)
+
         index = self.tabs.addTab(editor, title)
         self.tabs.setCurrentIndex(index)
         return editor

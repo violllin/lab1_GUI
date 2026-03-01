@@ -1,5 +1,5 @@
 from PyQt6.QtWidgets import QPlainTextEdit, QWidget
-from PyQt6.QtCore import Qt, QSize, QRect
+from PyQt6.QtCore import Qt, QSize, QRect, pyqtSignal
 from PyQt6.QtGui import QPainter, QColor
 
 class LineNumberArea(QWidget):
@@ -14,12 +14,34 @@ class LineNumberArea(QWidget):
         self.codeEditor.line_number_area_paint_event(event)
 
 class CodeEditorWidget(QPlainTextEdit):
+    file_dropped = pyqtSignal(str)
     def __init__(self, parent=None):
         super().__init__(parent)
         self.line_number_area = LineNumberArea(self)
         self.blockCountChanged.connect(self.update_line_number_area_width)
         self.updateRequest.connect(self.update_line_number_area)
         self.update_line_number_area_width(0)
+
+    def dragEnterEvent(self, event):
+        if event.mimeData().hasUrls():
+            event.acceptProposedAction()
+        else:
+            super().dragEnterEvent(event)
+
+    def dragMoveEvent(self, event):
+        if event.mimeData().hasUrls():
+            event.acceptProposedAction()
+        else:
+            super().dragMoveEvent(event)
+
+    def dropEvent(self, event):
+        if event.mimeData().hasUrls():
+            event.acceptProposedAction()
+            for url in event.mimeData().urls():
+                if url.isLocalFile():
+                    self.file_dropped.emit(url.toLocalFile())
+        else:
+            super().dropEvent(event)
 
     def line_number_area_width(self):
         digits = 1
