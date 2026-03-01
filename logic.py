@@ -1,5 +1,5 @@
 import os
-from PyQt6.QtWidgets import QFileDialog, QMessageBox
+from PyQt6.QtWidgets import QFileDialog, QMessageBox, QTextEdit
 from help_window import HelpWindow
 class EditorLogic:
     def __init__(self, ui_window):
@@ -92,7 +92,12 @@ class EditorLogic:
             font = editor.font()
             font.setPointSize(font.pointSize() + 2)
             editor.setFont(font)
-            self.ui.results.setFont(font)
+            editor.update_line_number_area_width()
+            self.ui.update_cursor_info()
+            for i in range(self.ui.result_tabs.count()):
+                widget = self.ui.result_tabs.widget(i)
+                if isinstance(widget, QTextEdit):
+                    widget.setFont(font)
 
     def zoom_out(self):
         editor = self.ui.get_current_editor()
@@ -102,4 +107,9 @@ class EditorLogic:
             if new_size >= 6:
                 font.setPointSize(new_size)
                 editor.setFont(font)
-                self.ui.results.setFont(font)
+                editor.update_line_number_area_width()
+                self.ui.update_cursor_info()
+                for i in range(self.ui.result_tabs.count()):
+                    widget = self.ui.result_tabs.widget(i)
+                    if isinstance(widget, QTextEdit):
+                        widget.setFont(font)

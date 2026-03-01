@@ -1,5 +1,5 @@
 from PyQt6.QtWidgets import (QMainWindow, QTextEdit, QSplitter, QToolBar, QStatusBar, QLabel, QTabWidget, QPlainTextEdit, QWidget)
-from PyQt6.QtCore import Qt, QSize
+from PyQt6.QtCore import Qt, QSize, QRect
 from PyQt6.QtGui import QFont, QPainter, QColor
 from actions import AppActions
 from logic import EditorLogic
@@ -9,8 +9,10 @@ class LineNumberArea(QWidget):
     def __init__(self, editor):
         super().__init__(editor)
         self.codeEditor = editor
+
     def sizeHint(self):
         return QSize(self.codeEditor.line_number_area_width(), 0)
+
     def paintEvent(self, event):
         self.codeEditor.line_number_area_paint_event(event)
 
@@ -31,7 +33,7 @@ class CodeEditor(QPlainTextEdit):
         space = 15 + self.fontMetrics().horizontalAdvance('9') * digits
         return space
 
-    def update_line_number_area_width(self, _):
+    def update_line_number_area_width(self, _=0):
         self.setViewportMargins(self.line_number_area_width(), 0, 0, 0)
 
     def update_line_number_area(self, rect, dy):
@@ -41,6 +43,11 @@ class CodeEditor(QPlainTextEdit):
             self.line_number_area.update(0, rect.y(), self.line_number_area.width(), rect.height())
         if rect.contains(self.viewport().rect()):
             self.update_line_number_area_width(0)
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        cr = self.contentsRect()
+        self.line_number_area.setGeometry(QRect(cr.left(), cr.top(), self.line_number_area_width(), cr.height()))
 
     def line_number_area_paint_event(self, event):
         painter = QPainter(self.line_number_area)
@@ -62,7 +69,6 @@ class CodeEditor(QPlainTextEdit):
             top = bottom
             bottom = top + round(self.blockBoundingRect(block).height())
             block_number += 1
-
 
 class CompilerUI(QMainWindow):
     def __init__(self):
@@ -90,12 +96,20 @@ class CompilerUI(QMainWindow):
         self.tabs.tabCloseRequested.connect(self.close_tab)
         self.tabs.currentChanged.connect(self.update_cursor_info)
 
-        self.results = QTextEdit()
-        self.results.setReadOnly(True)
-        self.results.setFont(QFont("Courier New", 11))
+        self.result_tabs = QTabWidget()
+        self.console_output = QTextEdit()
+        self.console_output.setReadOnly(True)
+        self.console_output.setFont(QFont("Courier New", 11))
+
+        self.errors_output = QTextEdit()
+        self.errors_output.setReadOnly(True)
+        self.errors_output.setFont(QFont("Courier New", 11))
+
+        self.result_tabs.addTab(self.console_output, "Вывод")
+        self.result_tabs.addTab(self.errors_output, "Ошибки")
 
         self.splitter.addWidget(self.tabs)
-        self.splitter.addWidget(self.results)
+        self.splitter.addWidget(self.result_tabs)
         self.splitter.setSizes([500, 200])
         self.setCentralWidget(self.splitter)
 
@@ -137,6 +151,8 @@ class CompilerUI(QMainWindow):
         self.status = QStatusBar()
         self.setStatusBar(self.status)
         self.cursor_label = QLabel("Стр: 1, Стлб: 1")
+        self.font_label = QLabel("Шрифт: 11pt")
+        self.status.addPermanentWidget(self.font_label)
         self.status.addPermanentWidget(self.cursor_label)
 
     def update_cursor_info(self):
@@ -146,6 +162,7 @@ class CompilerUI(QMainWindow):
             line = cursor.blockNumber() + 1
             col = cursor.columnNumber() + 1
             self.cursor_label.setText(f"Стр: {line}, Стлб: {col}")
+            self.font_label.setText(f"Шрифт: {editor.font().pointSize()}pt")
 
     def closeEvent(self, event):
         if self.logic.maybe_save_all():
@@ -156,16 +173,20 @@ class CompilerUI(QMainWindow):
     def setup_menu(self):
         menu = self.menuBar()
         file_m = menu.addMenu("Файл")
-        file_m.addActions([self.actions.menu_new, self.actions.menu_open, self.actions.menu_save, self.actions.menu_save_as])
+        file_m.addActions(
+            [self.actions.menu_new, self.actions.menu_open, self.actions.menu_save, self.actions.menu_save_as])
         file_m.addAction(self.actions.menu_exit)
 
         edit_m = menu.addMenu("Правка")
         edit_m.addActions([self.actions.menu_undo, self.actions.menu_redo])
-        edit_m.addActions([self.actions.menu_cut, self.actions.menu_copy, self.actions.menu_paste, self.actions.menu_delete])
-        edit_m.addAction("Выделить все", lambda: self.get_current_editor().selectAll() if self.get_current_editor() else None)
+        edit_m.addActions(
+            [self.actions.menu_cut, self.actions.menu_copy, self.actions.menu_paste, self.actions.menu_delete])
+        edit_m.addAction("Выделить все",
+                         lambda: self.get_current_editor().selectAll() if self.get_current_editor() else None)
 
         text_m = menu.addMenu("Текст")
-        for item in ["Постановка задачи", "Грамматика", "Метод анализа", "Тестовый пример", "Список литературы", "Исходный код программы"]:
+        for item in ["Постановка задачи", "Грамматика", "Метод анализа", "Тестовый пример", "Список литературы",
+                     "Исходный код программы"]:
             text_m.addAction(item)
 
         menu.addMenu("Пуск")
@@ -191,8 +212,10 @@ class CompilerUI(QMainWindow):
         toolbar.addAction(self.actions.zoom_out_act)
 
     def dragEnterEvent(self, event):
-        if event.mimeData().hasUrls(): event.accept()
-        else: event.ignore()
+        if event.mimeData().hasUrls():
+            event.accept()
+        else:
+            event.ignore()
 
     def dropEvent(self, event):
         urls = event.mimeData().urls()
