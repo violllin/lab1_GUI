@@ -1,9 +1,9 @@
-from PyQt6.QtWidgets import (QMainWindow, QTextEdit, QSplitter, QToolBar,
-                             QStatusBar, QLabel, QTabWidget, QPlainTextEdit, QWidget)
-from PyQt6.QtCore import Qt, QSize, QRect
+from PyQt6.QtWidgets import (QMainWindow, QTextEdit, QSplitter, QToolBar, QStatusBar, QLabel, QTabWidget, QPlainTextEdit, QWidget)
+from PyQt6.QtCore import Qt, QSize
 from PyQt6.QtGui import QFont, QPainter, QColor
 from actions import AppActions
 from logic import EditorLogic
+from highlighter import PythonHighlighter
 
 class LineNumberArea(QWidget):
     def __init__(self, editor):
@@ -13,14 +13,13 @@ class LineNumberArea(QWidget):
         return QSize(self.codeEditor.line_number_area_width(), 0)
     def paintEvent(self, event):
         self.codeEditor.line_number_area_paint_event(event)
+
 class CodeEditor(QPlainTextEdit):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.line_number_area = LineNumberArea(self)
-
         self.blockCountChanged.connect(self.update_line_number_area_width)
         self.updateRequest.connect(self.update_line_number_area)
-
         self.update_line_number_area_width(0)
 
     def line_number_area_width(self):
@@ -42,11 +41,6 @@ class CodeEditor(QPlainTextEdit):
             self.line_number_area.update(0, rect.y(), self.line_number_area.width(), rect.height())
         if rect.contains(self.viewport().rect()):
             self.update_line_number_area_width(0)
-
-    def resizeEvent(self, event):
-        super().resizeEvent(event)
-        cr = self.contentsRect()
-        self.line_number_area.setGeometry(QRect(cr.left(), cr.top(), self.line_number_area_width(), cr.height()))
 
     def line_number_area_paint_event(self, event):
         painter = QPainter(self.line_number_area)
@@ -111,6 +105,8 @@ class CompilerUI(QMainWindow):
         editor.setPlainText(content)
         editor.setAcceptDrops(False)
         editor.setProperty("file_path", file_path)
+
+        editor.highlighter = PythonHighlighter(editor.document())
 
         editor.document().modificationChanged.connect(lambda: self.update_tab_title(editor))
         editor.cursorPositionChanged.connect(self.update_cursor_info)
