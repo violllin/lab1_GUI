@@ -9,17 +9,6 @@ class EditorController:
         self.ui = main_window
         self.lang = "ru"
 
-    def add_error_to_table(self, path, line, message):
-        table = self.ui.output_panel.errors_output
-        row = table.rowCount()
-        table.insertRow(row)
-        items = [QTableWidgetItem(str(row + 1)), QTableWidgetItem(str(path)),
-                 QTableWidgetItem(str(line)), QTableWidgetItem(message)]
-        items[0].setTextAlignment(Qt.AlignmentFlag.AlignCenter)
-        items[2].setTextAlignment(Qt.AlignmentFlag.AlignCenter)
-        for col, item in enumerate(items):
-            table.setItem(row, col, item)
-
     def file_new(self):
         title = STRINGS[self.lang]["action_new"]
         self.ui.add_new_tab(title=title)
