@@ -12,7 +12,7 @@ class EditorController:
     def file_new(self):
         title = STRINGS[self.lang]["action_new"]
         self.ui.add_new_tab(title=title)
-        self.ui.statusBar().showMessage(STRINGS[self.lang]["msg_new_file"], 3000)
+        self.ui.statusBar().showMessage(STRINGS[self.lang]["msg_new_file"], 5000)
 
     def file_open(self):
         paths, _ = QFileDialog.getOpenFileNames(self.ui, "Open Files", "", "Text Files (*.txt);;All Files (*)")
