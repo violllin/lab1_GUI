@@ -9,18 +9,6 @@ class EditorController:
         self.ui = main_window
         self.lang = "ru"
 
-    def run_program(self):
-        self.ui.output_panel.console_output.clear()
-        self.ui.output_panel.errors_output.setRowCount(0)
-        editor = self.ui.get_current_editor()
-        if not editor: return
-        code = editor.toPlainText()
-        file_path = editor.property("file_path") or ("Новый файл" if self.lang == "ru" else "New File")
-        lines = code.split('\n')
-        for i, line_text in enumerate(lines):
-            if "error" in line_text.lower():
-                self.add_error_to_table(file_path, i + 1, "Ошибка" if self.lang == "ru" else "Error")
-
     def add_error_to_table(self, path, line, message):
         table = self.ui.output_panel.errors_output
         row = table.rowCount()

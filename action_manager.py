@@ -118,7 +118,6 @@ class ActionManager:
         self.paste_act.triggered.connect(lambda: self.win.get_current_editor().paste() if self.win.get_current_editor() else None)
         self.menu_paste.triggered.connect(lambda: self.win.get_current_editor().paste() if self.win.get_current_editor() else None)
         self.menu_select_all.triggered.connect(lambda: self.win.get_current_editor().selectAll() if self.win.get_current_editor() else None)
-        self.run_act.triggered.connect(self.ctrl.run_program)
         self.zoom_in_act.triggered.connect(self.ctrl.zoom_in)
         self.zoom_out_act.triggered.connect(self.ctrl.zoom_out)
         self.help_act.triggered.connect(self.ctrl.show_help)
