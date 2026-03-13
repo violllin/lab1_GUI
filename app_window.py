@@ -105,6 +105,7 @@ class MainWindow(QMainWindow):
         editor.setFont(QFont("Courier New", 11))
         editor.setPlainText(content)
         editor.setProperty("file_path", file_path)
+
         editor.highlighter = PythonHighlighter(editor.document())
 
         editor.document().modificationChanged.connect(lambda: self.update_tab_title(editor))
@@ -113,6 +114,8 @@ class MainWindow(QMainWindow):
         editor.file_dropped.connect(self.controller.load_file)
 
         index = self.tabs.addTab(editor, title)
+        if file_path:
+            self.tabs.setTabToolTip(index, file_path)
         self.tabs.setCurrentIndex(index)
         return editor
 

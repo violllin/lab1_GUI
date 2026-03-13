@@ -48,7 +48,9 @@ class EditorController:
         path, _ = QFileDialog.getSaveFileName(self.ui, "Save As", "", "Text Files (*.txt);;All Files (*)")
         if path:
             editor.setProperty("file_path", path)
-            self.ui.tabs.setTabText(self.ui.tabs.indexOf(editor), os.path.basename(path))
+            idx = self.ui.tabs.indexOf(editor)
+            self.ui.tabs.setTabText(idx, os.path.basename(path))
+            self.ui.tabs.setTabToolTip(idx, path)
             return self.file_save()
         return False
 
@@ -101,8 +103,7 @@ class EditorController:
         editor = self.ui.get_current_editor()
         if not editor: return
 
-        current_index = self.ui.tabs.currentIndex()
-        file_path = self.ui.tabs.tabToolTip(current_index) or "New File"
+        file_path = editor.property("file_path") or "New File"
 
         text = editor.toPlainText()
         scanner = Scanner()
