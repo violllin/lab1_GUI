@@ -28,6 +28,10 @@ class MainWindow(QMainWindow):
 
         self.controller = EditorController(self)
         self.actions = ActionManager(self, self.controller)
+        self.output_panel.lexer_table.cellClicked.connect(
+            lambda r, c: self.controller.on_table_item_clicked(self.output_panel.lexer_table, r, c))
+        self.output_panel.errors_table.cellClicked.connect(
+            lambda r, c: self.controller.on_table_item_clicked(self.output_panel.errors_table, r, c))
 
         self.setup_menu()
         self.setup_toolbar()
@@ -43,7 +47,7 @@ class MainWindow(QMainWindow):
 
         self.menu_file.setTitle(s["menu_file"])
         self.menu_edit.setTitle(s["menu_edit"])
-        self.menu_run.setTitle(s["menu_run"])
+        self.menu_run.setText(s["menu_run"])
         self.menu_text.setTitle(s["menu_text"])
         self.menu_help_top.setTitle(s["menu_help"])
         self.menu_lang.setTitle(s["menu_lang"])
@@ -68,6 +72,7 @@ class MainWindow(QMainWindow):
     def setup_menu(self):
         menu = self.menuBar()
         self.menu_file = menu.addMenu("")
+        s = STRINGS[self.current_lang]
         self.menu_file.addActions(
             [self.actions.menu_new, self.actions.menu_open, self.actions.menu_save, self.actions.menu_save_as,
              self.actions.menu_exit])
@@ -80,8 +85,8 @@ class MainWindow(QMainWindow):
         self.menu_text = menu.addMenu("")
         self.menu_text.addActions(self.actions.text_actions)
 
-
-        self.menu_run = menu.addMenu("")
+        self.menu_run = menu.addAction(s["menu_run"])
+        self.menu_run.triggered.connect(self.controller.run_lexer)
 
         self.menu_lang = menu.addMenu("")
         act_ru = self.menu_lang.addAction("Русский")

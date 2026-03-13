@@ -124,3 +124,5 @@ class ActionManager:
         self.menu_help.triggered.connect(self.ctrl.show_help)
         self.about_act.triggered.connect(self.ctrl.show_about)
         self.menu_about.triggered.connect(self.ctrl.show_about)
+        self.run_act.triggered.connect(self.ctrl.run_lexer)
+        self.menu_run_act.triggered.connect(self.ctrl.run_lexer)

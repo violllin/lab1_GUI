@@ -36,6 +36,14 @@ STRINGS = {
         "table_path": "Путь к файлу",
         "table_line": "Линия",
         "table_msg": "Сообщение",
+        "tab_lexer": "Вывод",
+        "tab_errors": "Ошибки",
+        "col_code": "Условный код",
+        "col_type": "Тип лексемы",
+        "col_value": "Значение",
+        "col_pos": "Местоположение",
+        "col_id": "№",
+        "col_path": "Путь к файлу",
         "text_items": ["Постановка задачи", "Грамматика", "Классификация грамматики", "Метод анализа", "Тестовый пример", "Список литературы", "Исходный код"]
     },
     "en": {
@@ -75,6 +83,14 @@ STRINGS = {
         "table_path": "File Path",
         "table_line": "Line",
         "table_msg": "Message",
+        "tab_lexer": "Output",
+        "tab_errors": "Errors",
+        "col_code": "Code",
+        "col_type": "Token Type",
+        "col_value": "Value",
+        "col_pos": "Position",
+        "col_id": "№",
+        "col_path": "File Path",
         "text_items": ["Task Problem", "Grammar", "Grammar Classification", "Analysis Method", "Test Case", "References", "Source Code"]
     }
 }

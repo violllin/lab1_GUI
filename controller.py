@@ -3,7 +3,8 @@ from PyQt6.QtWidgets import QFileDialog, QMessageBox, QTableWidgetItem
 from PyQt6.QtCore import Qt
 from help_window import HelpWindow
 from translations import STRINGS
-
+from PyQt6.QtGui import QTextCursor, QColor
+from scanner import Scanner
 class EditorController:
     def __init__(self, main_window):
         self.ui = main_window
@@ -95,3 +96,66 @@ class EditorController:
                 editor.setFont(font)
                 editor.update_line_number_area_width()
                 self.ui.update_cursor_info()
+
+    def run_lexer(self):
+        editor = self.ui.get_current_editor()
+        if not editor: return
+
+        current_index = self.ui.tabs.currentIndex()
+        file_path = self.ui.tabs.tabToolTip(current_index) or "New File"
+
+        text = editor.toPlainText()
+        scanner = Scanner()
+        tokens = scanner.analyze(text)
+
+        self.ui.output_panel.lexer_table.setRowCount(0)
+        self.ui.output_panel.errors_table.setRowCount(0)
+
+        for i, token in enumerate(tokens, start=1):
+            self._add_token_to_table(self.ui.output_panel.lexer_table, token, i, file_path)
+
+            if token.is_error:
+                err_no = self.ui.output_panel.errors_table.rowCount() + 1
+                self._add_token_to_table(self.ui.output_panel.errors_table, token, err_no, file_path)
+
+    def _add_token_to_table(self, table, token, index, path):
+        row = table.rowCount()
+        table.insertRow(row)
+
+        items = [
+            QTableWidgetItem(str(index)),
+            QTableWidgetItem(path),
+            QTableWidgetItem(str(token.code)),
+            QTableWidgetItem(token.type_name),
+            QTableWidgetItem(token.lexeme),
+            QTableWidgetItem(f"({token.line}, {token.start})")
+        ]
+
+        items[5].setData(Qt.ItemDataRole.UserRole, (token.line, token.start, token.end))
+
+        if token.is_error:
+            for item in items:
+                item.setBackground(QColor("#ffcccc"))
+
+        for col, item in enumerate(items):
+            table.setItem(row, col, item)
+
+    def on_table_item_clicked(self, table, row, col):
+        pos_item = table.item(row, 5)
+        if pos_item:
+            data = pos_item.data(Qt.ItemDataRole.UserRole)
+            if data:
+                line, start_col, end_col = data
+                editor = self.ui.get_current_editor()
+                if editor:
+                    cursor = editor.textCursor()
+                    block = editor.document().findBlockByNumber(line - 1)
+
+                    start_pos = block.position() + start_col - 1
+                    end_pos = block.position() + end_col
+
+                    cursor.setPosition(start_pos)
+                    cursor.setPosition(end_pos, QTextCursor.MoveMode.KeepAnchor)
+
+                    editor.setTextCursor(cursor)
+                    editor.setFocus()
