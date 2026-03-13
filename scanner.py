@@ -12,28 +12,28 @@ class Token:
 class Scanner:
     def __init__(self):
         self.keywords = {
-            "Int": (1, "ключевое слово 'Int'"),
-            "String": (2, "ключевое слово 'String'"),
-            "return": (3, "ключевое слово 'return'"),
-            "let": (4, "ключевое слово 'let'"),
-            "in": (5, "ключевое слово 'in'"),
-            "Bool": (7, "ключевое слово 'Bool'"),
-            "Float": (8, "ключевое слово 'Float'")
+            "Int": (1, "ключевое слово"),
+            "String": (2, "ключевое слово"),
+            "return": (3, "ключевое слово"),
+            "let": (4, "ключевое слово"),
+            "in": (5, "ключевое слово"),
+            "Bool": (7, "ключевое слово"),
+            "Float": (8, "ключевое слово")
         }
 
         self.single_chars = {
-            ':': (11, "двоеточие"),
-            '+': (12, "оператор '+'"),
-            '*': (13, "оператор '*'"),
-            '=': (15, "оператор присваивания '='"),
-            '(': (16, "открывающая скобка '('"),
-            ')': (17, "закрывающая скобка ')'"),
-            ',': (18, "запятая"),
-            '{': (19, "открывающая фигурная скобка '{'"),
-            '}': (20, "закрывающая фигурная скобка '}'"),
-            ';': (21, "конец оператора ';'"),
-            '%': (23, "оператор деления '%'"),
-            '/': (24, "оператор остаток от деления '/'")
+            ':': (11, "разделитель"),
+            '+': (12, "оператор"),
+            '*': (13, "оператор"),
+            '=': (15, "оператор"),
+            '(': (16, "разделитель"),
+            ')': (17, "разделитель"),
+            ',': (18, "разделитель"),
+            '{': (19, "разделитель"),
+            '}': (20, "разделитель"),
+            ';': (21, "разделитель"),
+            '%': (23, "оператор"),
+            '/': (24, "оператор")
         }
 
     def analyze(self, text):
@@ -44,26 +44,22 @@ class Scanner:
 
         while i < len(text):
             char = text[i]
-            start_col = col
 
-            if char in ' \t\n\r':
+            if char in '\t\n\r':
                 if char == '\n':
-                    lexeme = "\\n"
-                    tokens.append(Token(14, "разделитель (перенос)", lexeme, line, start_col, col))
                     line += 1
                     col = 1
-                elif char == '\t':
-                    lexeme = "\\t"
-                    tokens.append(Token(14, "разделитель (табуляция)", lexeme, line, start_col, col))
-                    col += 1
-                elif char == '\r':
-                    lexeme = "\\r"
-                    tokens.append(Token(14, "разделитель (возврат)", lexeme, line, start_col, col))
-                    col += 1
                 else:
-                    tokens.append(Token(14, "пробел", "(пробел)", line, start_col, col))
                     col += 1
                 i += 1
+                continue
+
+            start_col = col
+
+            if char == ' ':
+                tokens.append(Token(14, "разделитель", "space", line, start_col, col))
+                i += 1
+                col += 1
                 continue
 
             if char.isalpha():
@@ -90,16 +86,16 @@ class Scanner:
                     lexeme += text[i]
                     i += 1
                     col += 1
-                tokens.append(Token(22, "целое без знака", lexeme, line, start_col, col - 1))
+                tokens.append(Token(22, "константа", lexeme, line, start_col, col - 1))
                 continue
 
             if char == '-':
                 if i + 1 < len(text) and text[i + 1] == '>':
-                    tokens.append(Token(10, "оператор '->'", "->", line, start_col, col + 1))
+                    tokens.append(Token(10, "оператор", "->", line, start_col, col + 1))
                     i += 2
                     col += 2
                 else:
-                    tokens.append(Token(9, "оператор '-'", "-", line, start_col, col))
+                    tokens.append(Token(9, "оператор", "-", line, start_col, col))
                     i += 1
                     col += 1
                 continue

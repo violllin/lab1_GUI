@@ -10,7 +10,7 @@ class PythonHighlighter(QSyntaxHighlighter):
         keyword_format.setFontWeight(QFont.Weight.Bold)
         keywords = [
             "class", "func", "if", "else", "else if", "for", "while", "return",
-            "import", "as", "try", "catch", "defer", "break", "continue", "true", "false", "var", "let", "in", "Int"
+            "import", "as", "try", "catch", "defer", "break", "continue", "true", "false", "var", "let", "in", "Int", "Float", "String", "Bool"
         ]
         for word in keywords:
             pattern = QRegularExpression(f"\\b{word}\\b")
