@@ -141,7 +141,7 @@ class EditorController:
         for col, item in enumerate(items):
             table.setItem(row, col, item)
 
-    def on_table_item_clicked(self, table, row, col):
+    def on_table_item_clicked(self, table, row):
         pos_item = table.item(row, 5)
         if pos_item:
             data = pos_item.data(Qt.ItemDataRole.UserRole)
