@@ -138,7 +138,8 @@ class EditorController:
             ]
 
             if err.token:
-                items[4].setData(Qt.ItemDataRole.UserRole, (err.token.line, err.token.start, err.token.end))
+                length = err.token.end - err.token.start + 1
+                items[4].setData(Qt.ItemDataRole.UserRole, (err.token.line, err.token.start, length))
 
             for col, item in enumerate(items):
                 item.setBackground(QColor("#ffcccc"))
@@ -174,20 +175,17 @@ class EditorController:
         data = pos_item.data(Qt.ItemDataRole.UserRole)
         if not data: return
 
-        line, start_col, lex_len = data
+        line, start_col, length = data
         editor = self.ui.get_current_editor()
         if editor:
             cursor = editor.textCursor()
             block = editor.document().findBlockByNumber(line - 1)
-
             new_pos = block.position() + (start_col - 1)
-
             cursor.setPosition(new_pos)
             cursor.movePosition(
                 QTextCursor.MoveOperation.Right,
                 QTextCursor.MoveMode.KeepAnchor,
-                lex_len
+                length
             )
-
             editor.setTextCursor(cursor)
             editor.setFocus()
