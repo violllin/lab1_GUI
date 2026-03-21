@@ -5,6 +5,8 @@ from help_window import HelpWindow
 from translations import STRINGS
 from PyQt6.QtGui import QTextCursor, QColor
 from scanner import Scanner
+from parser import Parser
+
 class EditorController:
     def __init__(self, main_window):
         self.ui = main_window
@@ -104,59 +106,88 @@ class EditorController:
         if not editor: return
 
         file_path = editor.property("file_path") or "New File"
-
         text = editor.toPlainText()
+
         scanner = Scanner()
         tokens = scanner.analyze(text)
+        parser = Parser(tokens)
+        syntax_errors = parser.parse()
 
-        self.ui.output_panel.lexer_table.setRowCount(0)
-        self.ui.output_panel.errors_table.setRowCount(0)
+        table = self.ui.output_panel.output_table
+        table.setRowCount(0)
 
-        for i, token in enumerate(tokens, start=1):
-            self._add_token_to_table(self.ui.output_panel.lexer_table, token, i, file_path)
+        if not syntax_errors:
+            self.ui.statusBar().showMessage(STRINGS[self.lang]["msg_no_errors"], 5000)
+            return
 
-            if token.is_error:
-                err_no = self.ui.output_panel.errors_table.rowCount() + 1
-                self._add_token_to_table(self.ui.output_panel.errors_table, token, err_no, file_path)
+        for i, err in enumerate(syntax_errors, start=1):
+            row = table.rowCount()
+            table.insertRow(row)
 
-    def _add_token_to_table(self, table, token, index, path):
+            fragment = err.token.lexeme if err.token else "EOF"
+            pos_str = f"({err.token.line}, {err.token.start})" if err.token else "-"
+
+            description = err.message
+
+            items = [
+                QTableWidgetItem(str(i)),
+                QTableWidgetItem(file_path),
+                QTableWidgetItem(fragment),
+                QTableWidgetItem(description),
+                QTableWidgetItem(pos_str)
+            ]
+
+            if err.token:
+                items[4].setData(Qt.ItemDataRole.UserRole, (err.token.line, err.token.start, err.token.end))
+
+            for col, item in enumerate(items):
+                item.setBackground(QColor("#ffcccc"))
+                table.setItem(row, col, item)
+
+        msg = STRINGS[self.lang]["msg_errors_found"].format(len(syntax_errors))
+        self.ui.statusBar().showMessage(msg, 5000)
+
+    def _add_token_to_table(self, table, error, index):
         row = table.rowCount()
         table.insertRow(row)
 
-        items = [
-            QTableWidgetItem(str(index)),
-            QTableWidgetItem(path),
-            QTableWidgetItem(str(token.code)),
-            QTableWidgetItem(token.type_name),
-            QTableWidgetItem(token.lexeme),
-            QTableWidgetItem(f"({token.line}, {token.start})")
-        ]
+        item_id = QTableWidgetItem(str(index))
+        item_msg = QTableWidgetItem(error.message)
+        item_lex = QTableWidgetItem(error.lexeme if error.lexeme else "—")
+        item_pos = QTableWidgetItem(f"{error.line}:{error.column}")
 
-        items[5].setData(Qt.ItemDataRole.UserRole, (token.line, token.start, token.end))
+        lex_len = len(error.lexeme) if error.lexeme else 1
+        item_pos.setData(Qt.ItemDataRole.UserRole, (error.line, error.column, lex_len))
 
-        if token.is_error:
-            for item in items:
-                item.setBackground(QColor("#ffcccc"))
+        for item in [item_id, item_msg, item_lex, item_pos]:
+            item.setBackground(QColor("#FFCCCC"))
 
-        for col, item in enumerate(items):
-            table.setItem(row, col, item)
+        table.setItem(row, 0, item_id)
+        table.setItem(row, 1, item_msg)
+        table.setItem(row, 2, item_lex)
+        table.setItem(row, 3, item_pos)
 
     def on_table_item_clicked(self, table, row):
-        pos_item = table.item(row, 5)
-        if pos_item:
-            data = pos_item.data(Qt.ItemDataRole.UserRole)
-            if data:
-                line, start_col, end_col = data
-                editor = self.ui.get_current_editor()
-                if editor:
-                    cursor = editor.textCursor()
-                    block = editor.document().findBlockByNumber(line - 1)
+        pos_item = table.item(row, table.columnCount() - 1)
+        if not pos_item: return
 
-                    start_pos = block.position() + start_col - 1
-                    end_pos = block.position() + end_col
+        data = pos_item.data(Qt.ItemDataRole.UserRole)
+        if not data: return
 
-                    cursor.setPosition(start_pos)
-                    cursor.setPosition(end_pos, QTextCursor.MoveMode.KeepAnchor)
+        line, start_col, lex_len = data
+        editor = self.ui.get_current_editor()
+        if editor:
+            cursor = editor.textCursor()
+            block = editor.document().findBlockByNumber(line - 1)
 
-                    editor.setTextCursor(cursor)
-                    editor.setFocus()
+            new_pos = block.position() + (start_col - 1)
+
+            cursor.setPosition(new_pos)
+            cursor.movePosition(
+                QTextCursor.MoveOperation.Right,
+                QTextCursor.MoveMode.KeepAnchor,
+                lex_len
+            )
+
+            editor.setTextCursor(cursor)
+            editor.setFocus()

@@ -39,11 +39,13 @@ STRINGS = {
         "tab_lexer": "Вывод",
         "tab_errors": "Ошибки",
         "col_code": "Условный код",
-        "col_type": "Тип лексемы",
-        "col_value": "Значение",
         "col_pos": "Местоположение",
         "col_id": "№",
         "col_path": "Путь к файлу",
+        "col_wrong_fragment": "Неверный фрагмент",
+        "col_description": "Описание ошибки",
+        "msg_no_errors": "Анализ завершен: ошибок нет",
+        "msg_errors_found": "Анализ завершен: найдено ошибок - {}",
         "text_items": ["Постановка задачи", "Грамматика", "Классификация грамматики", "Метод анализа", "Тестовый пример", "Список литературы", "Исходный код"]
     },
     "en": {
@@ -85,12 +87,13 @@ STRINGS = {
         "table_msg": "Message",
         "tab_lexer": "Output",
         "tab_errors": "Errors",
-        "col_code": "Code",
-        "col_type": "Token Type",
-        "col_value": "Value",
+        "col_wrong_fragment": "Invalid Fragment",
+        "col_description": "Error Description",
         "col_pos": "Position",
         "col_id": "№",
         "col_path": "File Path",
+        "msg_no_errors": "Analysis complete: no errors",
+        "msg_errors_found": "Analysis complete: {} errors found",
         "text_items": ["Task Problem", "Grammar", "Grammar Classification", "Analysis Method", "Test Case", "References", "Source Code"]
     }
 }

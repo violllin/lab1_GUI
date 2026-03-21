@@ -28,10 +28,8 @@ class MainWindow(QMainWindow):
 
         self.controller = EditorController(self)
         self.actions = ActionManager(self, self.controller)
-        self.output_panel.lexer_table.cellClicked.connect(
-            lambda r, c: self.controller.on_table_item_clicked(self.output_panel.lexer_table, r, c))
-        self.output_panel.errors_table.cellClicked.connect(
-            lambda r, c: self.controller.on_table_item_clicked(self.output_panel.errors_table, r, c))
+        self.output_panel.output_table.cellClicked.connect(
+            lambda r, c: self.controller.on_table_item_clicked(self.output_panel.output_table, r))
 
         self.setup_menu()
         self.setup_toolbar()
