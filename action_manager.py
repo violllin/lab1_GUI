@@ -7,6 +7,10 @@ class ActionManager:
         self.win = window
         self.ctrl = controller
 
+        self.antlr_run_act = QAction(style.standardIcon(style.StandardPixmap.SP_DesktopIcon), "Run ANTLR", window)
+
+        self.menu_antlr_run = QAction("Запустить ANTLR", window)
+
         self.new_act = QAction(style.standardIcon(style.StandardPixmap.SP_FileIcon), "", window)
         self.open_act = QAction(style.standardIcon(style.StandardPixmap.SP_DialogOpenButton), "", window)
         self.save_act = QAction(style.standardIcon(style.StandardPixmap.SP_DialogSaveButton), "", window)
@@ -98,6 +102,10 @@ class ActionManager:
                 action.setText(s["text_items"][i])
 
     def _connect_signals(self):
+
+        self.antlr_run_act.triggered.connect(self.ctrl.run_antlr_analysis)
+        self.menu_antlr_run.triggered.connect(self.ctrl.run_antlr_analysis)
+
         self.new_act.triggered.connect(self.ctrl.file_new)
         self.menu_new.triggered.connect(self.ctrl.file_new)
         self.open_act.triggered.connect(self.ctrl.file_open)

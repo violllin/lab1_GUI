@@ -75,6 +75,11 @@ class MainWindow(QMainWindow):
             [self.actions.menu_new, self.actions.menu_open, self.actions.menu_save, self.actions.menu_save_as,
              self.actions.menu_exit])
 
+        self.menu_run = menu.addMenu(s["menu_run"])  # Изменяем с addAction на addMenu
+        self.menu_run.addAction(self.actions.menu_run_act)  # Старый анализатор
+        self.menu_run.addSeparator()
+        self.menu_run.addAction(self.actions.menu_antlr_run)
+
         self.menu_edit = menu.addMenu("")
         self.menu_edit.addActions(
             [self.actions.menu_undo, self.actions.menu_redo, self.actions.menu_cut, self.actions.menu_copy,
@@ -155,6 +160,10 @@ class MainWindow(QMainWindow):
         toolbar = QToolBar("Toolbar")
         toolbar.setIconSize(QSize(28, 28))
         self.addToolBar(toolbar)
+
+        toolbar.addAction(self.actions.run_act)
+        toolbar.addAction(self.actions.antlr_run_act)
+
         toolbar.addActions([self.actions.new_act, self.actions.open_act, self.actions.save_act])
         toolbar.addSeparator()
         toolbar.addActions([self.actions.undo_act, self.actions.redo_act])

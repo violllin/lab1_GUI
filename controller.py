@@ -6,11 +6,85 @@ from translations import STRINGS
 from PyQt6.QtGui import QTextCursor, QColor
 from scanner import Scanner
 from parser import Parser
+from antlr4.error.ErrorListener import ErrorListener
+from antlr4 import InputStream, CommonTokenStream
+from MyGrammarLexer import MyGrammarLexer
+from MyGrammarParser import MyGrammarParser
+
+class MyAntlrErrorListener(ErrorListener):
+    def __init__(self):
+        super().__init__()
+        self.errors = []
+
+    def syntaxError(self, recognizer, offendingSymbol, line, column, msg, e):
+        symbol_text = offendingSymbol.text if offendingSymbol else ""
+        if not symbol_text and "at: '" in msg:
+            symbol_text = msg.split("'")[1]
+
+        error_info = {
+            "line": line,
+            "column": column,
+            "message": msg,
+            "symbol": symbol_text or "<EOF>"
+        }
+        self.errors.append(error_info)
+
 
 class EditorController:
     def __init__(self, main_window):
         self.ui = main_window
         self.lang = "ru"
+
+    def run_antlr_analysis(self):
+        editor = self.ui.get_current_editor()
+        if not editor: return
+
+        table = self.ui.output_panel.output_table
+        table.setRowCount(0)
+
+        file_path = editor.property("file_path") or "New File"
+        text = editor.toPlainText()
+        input_stream = InputStream(text)
+
+        lexer = MyGrammarLexer(input_stream)
+        lexer.removeErrorListeners()
+        stream = CommonTokenStream(lexer)
+
+        parser = MyGrammarParser(stream)
+        parser.removeErrorListeners()
+
+        error_listener = MyAntlrErrorListener()
+        lexer.addErrorListener(error_listener)
+        parser.addErrorListener(error_listener)
+
+        try:
+            parser.startRule()
+        except Exception as e:
+            print(f"Критическая ошибка ANTLR: {e}")
+
+        if not error_listener.errors:
+            self.ui.statusBar().showMessage("ANTLR: Ошибок не обнаружено", 5000)
+            return
+
+        for i, err in enumerate(error_listener.errors, start=1):
+            row = table.rowCount()
+            table.insertRow(row)
+
+            items = [
+                QTableWidgetItem(str(i)),
+                QTableWidgetItem(file_path),
+                QTableWidgetItem(err["symbol"] if err["symbol"] else "<WS/EOF>"),
+                QTableWidgetItem(err["message"]),
+                QTableWidgetItem(f"{err['line']}:{err['column']}")
+            ]
+
+            items[4].setData(Qt.ItemDataRole.UserRole, (err["line"], err["column"], len(err["symbol"]) or 1))
+
+            for item in items:
+                item.setBackground(QColor("#FFCCCC"))
+                table.setItem(row, items.index(item), item)
+
+        self.ui.statusBar().showMessage(f"ANTLR: Найдено ошибок: {len(error_listener.errors)}", 5000)
 
     def file_new(self):
         title = STRINGS[self.lang]["action_new"]

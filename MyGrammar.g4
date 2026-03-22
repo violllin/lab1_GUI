@@ -30,3 +30,4 @@ endRule      : ';' ;
 ID           : [a-zA-Z] [a-zA-Z0-9]* ;
 NUMBER       : [0-9]+ ;
 WS           : [ \t\r\n]+ -> skip ;
+ANY : . ;
