@@ -48,33 +48,29 @@ class Parser:
             is_exp = (is_type and token.type_name == expected) or (not is_type and token.lexeme == expected)
             if is_exp:
                 self.pos += 1
+            else:
+                pass
             return True
         return False
 
     def match(self, expected, is_type=False, sync_tokens=None):
         token = self.current_token()
-        if not token:
-            self.errors.append(ParseError(None, expected))
-            return False
 
-        if (is_type and token.type_name == expected) or (not is_type and token.lexeme == expected):
+        if token and ((is_type and token.type_name == expected) or (not is_type and token.lexeme == expected)):
             self.advance()
             return True
 
-        if not is_type and expected in ["let", "return", "in"]:
+        if token and not is_type and expected in ["let", "return", "in"]:
             next_t = self.tokens[self.pos + 1] if self.pos + 1 < len(self.tokens) else None
             if next_t:
                 is_typo = False
-
-                if expected == "let":
-                    if next_t.type_name == "идентификатор":
-                        is_typo = True
-                elif expected == "return":
-                    if next_t.type_name in ["идентификатор", "константа"] or next_t.lexeme == "(":
-                        is_typo = True
-                elif expected == "in":
-                    if next_t.lexeme == "return":
-                        is_typo = True
+                if expected == "let" and next_t.type_name == "идентификатор":
+                    is_typo = True
+                elif expected == "return" and (
+                        next_t.type_name in ["идентификатор", "константа"] or next_t.lexeme == "("):
+                    is_typo = True
+                elif expected == "in" and next_t.lexeme == "return":
+                    is_typo = True
 
                 if is_typo:
                     self.errors.append(ParseError(token, expected))
