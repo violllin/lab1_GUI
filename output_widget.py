@@ -14,17 +14,16 @@ class OutputPanel(QTabWidget):
 
     def _create_table(self):
         table = QTableWidget()
-        table.setColumnCount(6)
+        table.setColumnCount(6)  #
         table.verticalHeader().setVisible(False)
-
         header = table.horizontalHeader()
 
         header.setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
         header.setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
         header.setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
         header.setSectionResizeMode(3, QHeaderView.ResizeMode.ResizeToContents)
-        header.setSectionResizeMode(4, QHeaderView.ResizeMode.ResizeToContents)
-        header.setSectionResizeMode(5, QHeaderView.ResizeMode.Stretch)
+        header.setSectionResizeMode(4, QHeaderView.ResizeMode.Stretch)
+        header.setSectionResizeMode(5, QHeaderView.ResizeMode.ResizeToContents)
         return table
 
     def retranslate(self, lang):
