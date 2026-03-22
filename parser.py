@@ -28,6 +28,29 @@ class Parser:
     def advance(self):
         self.pos += 1
 
+    def irons_recover(self, expected, is_type, sync_tokens, error_token=None):
+        sync_list = sync_tokens or []
+
+        while self.pos < len(self.tokens):
+            token = self.tokens[self.pos]
+            is_exp = (is_type and token.type_name == expected) or (not is_type and token.lexeme == expected)
+            is_sync = token.lexeme in sync_list or token.type_name in sync_list
+
+            if is_exp or is_sync:
+                break
+
+            if token != error_token:
+                self.errors.append(ParseError(token, expected, f"Лишний символ: '{token.lexeme}'"))
+            self.pos += 1
+
+        token = self.current_token()
+        if token:
+            is_exp = (is_type and token.type_name == expected) or (not is_type and token.lexeme == expected)
+            if is_exp:
+                self.pos += 1
+            return True
+        return False
+
     def match(self, expected, is_type=False, sync_tokens=None):
         token = self.current_token()
         if not token:
@@ -38,47 +61,28 @@ class Parser:
             self.advance()
             return True
 
+        if not is_type and expected in ["let", "return", "in"]:
+            next_t = self.tokens[self.pos + 1] if self.pos + 1 < len(self.tokens) else None
+            if next_t:
+                is_typo = False
+
+                if expected == "let":
+                    if next_t.type_name == "идентификатор":
+                        is_typo = True
+                elif expected == "return":
+                    if next_t.type_name in ["идентификатор", "константа"] or next_t.lexeme == "(":
+                        is_typo = True
+                elif expected == "in":
+                    if next_t.lexeme == "return":
+                        is_typo = True
+
+                if is_typo:
+                    self.errors.append(ParseError(token, expected))
+                    self.advance()
+                    return True
+
         self.errors.append(ParseError(token, expected))
-        sync_list = sync_tokens or []
-
-        if not is_type and token.type_name == "идентификатор":
-            if expected == "let" and self.pos + 1 < len(self.tokens):
-                next_t = self.tokens[self.pos + 1]
-                if next_t.type_name == "идентификатор":
-                    self.pos += 1
-                    return True
-            elif expected == "return" and self.pos + 1 < len(self.tokens):
-                next_t = self.tokens[self.pos + 1]
-                if next_t.type_name in ["идентификатор", "константа"] or next_t.lexeme == "(":
-                    self.pos += 1
-                    return True
-
-        if token.lexeme in sync_list or token.type_name in sync_list:
-            return False
-
-        temp_pos = self.pos
-        found_expected = False
-        found_sync = False
-
-        while temp_pos < len(self.tokens):
-            t = self.tokens[temp_pos]
-            if (is_type and t.type_name == expected) or (not is_type and t.lexeme == expected):
-                found_expected = True
-                break
-            if t.lexeme in sync_list or t.type_name in sync_list:
-                found_sync = True
-                break
-            temp_pos += 1
-
-        for i in range(self.pos + 1, temp_pos):
-            self.errors.append(ParseError(self.tokens[i], expected, f"Лишний символ: '{self.tokens[i].lexeme}'"))
-
-        if found_expected:
-            self.pos = temp_pos + 1
-            return True
-        else:
-            self.pos = temp_pos
-            return False
+        return self.irons_recover(expected, is_type, sync_tokens, error_token=token)
 
     def recover(self, sync_tokens):
         while self.pos < len(self.tokens):
@@ -108,9 +112,9 @@ class Parser:
             self.parse_param_list()
 
         self.match(")", sync_tokens=["->", "in"])
-        self.match("->", sync_tokens=["Int", "String", "Float", "Bool", "in"])
+        self.match("->", sync_tokens=["Int", "String", "Float", "Bool", "in", "return", "идентификатор", "константа", "("])
         self.parse_type()
-        self.match("in", sync_tokens=["return"])
+        self.match("in", sync_tokens=["return", "идентификатор", "константа", "("])
         self.match("return", sync_tokens=["идентификатор", "константа", "("])
 
         self.parse_expr()
@@ -150,32 +154,10 @@ class Parser:
             return True
 
         self.errors.append(ParseError(token, "Тип данных (Int, String, Float, Bool)"))
-        sync_tokens = [",", ")", "in", "->", "return", "{", "}", ";"]
 
-        if token.lexeme in sync_tokens or token.type_name in sync_tokens:
-            return False
+        sync_tokens = [",", ")", "in", "{"]
 
-        temp_pos = self.pos
-        found_expected = False
-
-        while temp_pos < len(self.tokens):
-            t = self.tokens[temp_pos]
-            if t.lexeme in types:
-                found_expected = True
-                break
-            if t.lexeme in sync_tokens or t.type_name in sync_tokens:
-                break
-            temp_pos += 1
-
-        for i in range(self.pos + 1, temp_pos):
-            self.errors.append(ParseError(self.tokens[i], "Тип данных", f"Лишний символ: '{self.tokens[i].lexeme}'"))
-
-        if found_expected:
-            self.pos = temp_pos + 1
-            return True
-        else:
-            self.pos = temp_pos
-            return False
+        return self.irons_recover("Int", False, sync_tokens, error_token=token)
 
     def parse_expr(self):
         self.parse_term()
@@ -201,4 +183,4 @@ class Parser:
             self.match(")", sync_tokens=["+", "-", "*", "/", "}", ";"])
         else:
             self.errors.append(ParseError(token, "Выражение"))
-            self.recover(["+", "-", "*", "/", "}", ";", ")", "return"])
+            self.irons_recover("идентификатор", True, ["+", "-", "*", "/", "}", ";", ")", "return"], error_token=token)
