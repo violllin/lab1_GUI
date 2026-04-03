@@ -1,5 +1,5 @@
 from PyQt6.QtGui import QAction, QKeySequence
-from translations import STRINGS
+from antlr_tool.translations import STRINGS
 
 class ActionManager:
     def __init__(self, window, controller):

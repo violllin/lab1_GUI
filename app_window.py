@@ -6,7 +6,7 @@ from output_widget import OutputPanel
 from controller import EditorController
 from action_manager import ActionManager
 from highlighter import PythonHighlighter
-from translations import STRINGS
+from antlr_tool.translations import STRINGS
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -74,11 +74,6 @@ class MainWindow(QMainWindow):
         self.menu_file.addActions(
             [self.actions.menu_new, self.actions.menu_open, self.actions.menu_save, self.actions.menu_save_as,
              self.actions.menu_exit])
-
-        self.menu_run = menu.addMenu(s["menu_run"])  # Изменяем с addAction на addMenu
-        self.menu_run.addAction(self.actions.menu_run_act)  # Старый анализатор
-        self.menu_run.addSeparator()
-        self.menu_run.addAction(self.actions.menu_antlr_run)
 
         self.menu_edit = menu.addMenu("")
         self.menu_edit.addActions(

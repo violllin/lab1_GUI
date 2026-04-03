@@ -46,6 +46,15 @@ STRINGS = {
         "col_description": "Описание ошибки",
         "msg_no_errors": "Анализ завершен: ошибок нет",
         "msg_errors_found": "Анализ завершен: найдено ошибок - {}",
+        "tab_regex": "Регулярные выражения",
+        "regex_phone": "Французские номера",
+        "regex_bitcoin": "Биткоин-адреса",
+        "regex_latitude": "Широта (градусы)",
+        "col_match": "Найденная подстрока",
+        "col_len": "Длина",
+        "msg_no_data": "Нет данных для поиска",
+        "msg_regex_found": "Найдено совпадений: {}",
+        "action_run_regex": "Искать по РВ",
         "text_items": ["Постановка задачи", "Грамматика", "Классификация грамматики", "Метод анализа", "Тестовый пример", "Список литературы", "Исходный код"]
     },
     "en": {
@@ -94,6 +103,15 @@ STRINGS = {
         "col_path": "File Path",
         "msg_no_errors": "Analysis complete: no errors",
         "msg_errors_found": "Analysis complete: {} errors found",
+        "tab_regex": "Regular Expressions",
+        "regex_phone": "French Phones",
+        "regex_bitcoin": "Bitcoin Addresses",
+        "regex_latitude": "Latitude (DMS)",
+        "col_match": "Found Substring",
+        "col_len": "Length",
+        "msg_no_data": "No data to search",
+        "msg_regex_found": "Matches found: {}",
+        "action_run_regex": "Search Regex",
         "text_items": ["Task Problem", "Grammar", "Grammar Classification", "Analysis Method", "Test Case", "References", "Source Code"]
     }
 }
