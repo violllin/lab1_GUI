@@ -285,7 +285,7 @@ class EditorController:
 
         patterns = {
             "phone": r"(?:\+|00)?(?:33|0)\s*[1-9](?:[\s-]*\d{2}){4}",
-            "bitcoin": r"[13][a-km-zA-HJ-NP-Z1-9]{25,34}",
+            "bitcoin": r"(?:[13][a-km-zA-HJ-NP-Z1-9]{25,34}|bc1[ac-hj-np-z02-9]{11,71})",
             "latitude": r"(?:[0-8]?\d|90)°[0-5]?\d'[0-5]?\d\"[NS]"
         }
 
