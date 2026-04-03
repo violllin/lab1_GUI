@@ -88,6 +88,9 @@ class Parser:
             self.pos += 1
 
     def parse(self):
+        if not self.tokens:
+            return self.errors
+
         self.parse_start()
 
         while self.current_token() is not None:

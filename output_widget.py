@@ -1,5 +1,5 @@
 from PyQt6.QtWidgets import QTabWidget, QTableWidget, QHeaderView
-from translations import STRINGS
+from antlr_tool.translations import STRINGS
 
 class OutputPanel(QTabWidget):
     def __init__(self, parent=None):

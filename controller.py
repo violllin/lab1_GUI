@@ -2,14 +2,14 @@ import os
 from PyQt6.QtWidgets import QFileDialog, QMessageBox, QTableWidgetItem
 from PyQt6.QtCore import Qt
 from help_window import HelpWindow
-from translations import STRINGS
+from antlr_tool.translations import STRINGS
 from PyQt6.QtGui import QTextCursor, QColor
 from scanner import Scanner
 from parser import Parser
 from antlr4.error.ErrorListener import ErrorListener
 from antlr4 import InputStream, CommonTokenStream
-from MyGrammarLexer import MyGrammarLexer
-from MyGrammarParser import MyGrammarParser
+from antlr_tool.MyGrammarLexer import MyGrammarLexer
+from antlr_tool.MyGrammarParser import MyGrammarParser
 
 class MyAntlrErrorListener(ErrorListener):
     def __init__(self):
