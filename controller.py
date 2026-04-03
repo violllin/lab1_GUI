@@ -1,8 +1,9 @@
 import os
+import re
 from PyQt6.QtWidgets import QFileDialog, QMessageBox, QTableWidgetItem
 from PyQt6.QtCore import Qt
 from help_window import HelpWindow
-from antlr_tool.translations import STRINGS
+from translations import STRINGS
 from PyQt6.QtGui import QTextCursor, QColor
 from scanner import Scanner
 from parser import Parser
@@ -243,13 +244,16 @@ class EditorController:
         table.setItem(row, 3, item_pos)
 
     def on_table_item_clicked(self, table, row):
-        pos_item = table.item(row, table.columnCount() - 1)
+        pos_item = None
+        for col in range(table.columnCount()):
+            item = table.item(row, col)
+            if item and item.data(Qt.ItemDataRole.UserRole):
+                pos_item = item
+                break
+
         if not pos_item: return
 
-        data = pos_item.data(Qt.ItemDataRole.UserRole)
-        if not data: return
-
-        line, start_col, length = data
+        line, start_col, length = pos_item.data(Qt.ItemDataRole.UserRole)
         editor = self.ui.get_current_editor()
         if editor:
             cursor = editor.textCursor()
@@ -263,3 +267,61 @@ class EditorController:
             )
             editor.setTextCursor(cursor)
             editor.setFocus()
+
+    def run_regex_search(self, pattern_type):
+        editor = self.ui.get_current_editor()
+        if not editor:
+            return
+
+        table = self.ui.output_panel.rv_table
+        table.setRowCount(0)
+        self.ui.output_panel.setCurrentIndex(1)
+
+        text = editor.toPlainText()
+
+        if not text.strip():
+            self.ui.statusBar().showMessage("Нет данных для поиска", 5000)
+            return
+
+        patterns = {
+            "phone": r"(?:\+|00)?(?:33|0)\s*[1-9](?:[\s.-]*\d{2}){4}",
+            "bitcoin": r"[13][a-km-zA-HJ-NP-Z1-9]{25,34}",
+            "latitude": r"(?:[0-8]?\d|90)°[0-5]?\d'[0-5]?\d\"[NS]"
+        }
+
+        pattern = patterns.get(pattern_type)
+        if not pattern:
+            return
+
+        file_path = editor.property("file_path") or "New File"
+        matches = list(re.finditer(pattern, text, re.MULTILINE))
+
+        if not matches:
+            self.ui.statusBar().showMessage("Совпадений не найдено", 5000)
+            return
+
+        for i, match in enumerate(matches, start=1):
+            row = table.rowCount()
+            table.insertRow(row)
+
+            start_index = match.start()
+            matched_text = match.group()
+            length = len(matched_text)
+
+            line_number = text.count('\n', 0, start_index) + 1
+            last_newline = text.rfind('\n', 0, start_index)
+            column_number = start_index - last_newline if last_newline != -1 else start_index + 1
+
+            items = [
+                QTableWidgetItem(str(i)),
+                QTableWidgetItem(file_path),
+                QTableWidgetItem(matched_text),
+                QTableWidgetItem(f"Стр: {line_number}, Кол: {column_number}"),
+                QTableWidgetItem(str(length))
+            ]
+            items[3].setData(Qt.ItemDataRole.UserRole, (line_number, column_number, length))
+
+            for col, item in enumerate(items):
+                table.setItem(row, col, item)
+
+        self.ui.statusBar().showMessage(f"Поиск завершен. Найдено: {len(matches)}", 5000)

@@ -6,7 +6,7 @@ from output_widget import OutputPanel
 from controller import EditorController
 from action_manager import ActionManager
 from highlighter import PythonHighlighter
-from antlr_tool.translations import STRINGS
+from translations import STRINGS
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -31,6 +31,9 @@ class MainWindow(QMainWindow):
         self.output_panel.output_table.cellClicked.connect(
             lambda r, c: self.controller.on_table_item_clicked(self.output_panel.output_table, r))
 
+        self.output_panel.rv_table.cellClicked.connect(
+            lambda r, c: self.controller.on_table_item_clicked(self.output_panel.rv_table, r))
+
         self.setup_menu()
         self.setup_toolbar()
         self.setup_status_bar()
@@ -42,6 +45,11 @@ class MainWindow(QMainWindow):
         s = STRINGS[self.current_lang]
         self.setWindowTitle(s["window_title"])
         self.controller.lang = self.current_lang
+
+        self.menu_rv.setTitle(s.get("menu_rv", "РВ"))
+        self.actions.rv_french_phone.setText(s.get("regex_phone", "Французские номера"))
+        self.actions.rv_bitcoin.setText(s.get("regex_bitcoin", "Биткоин-адреса"))
+        self.actions.rv_latitude.setText(s.get("regex_latitude", "Широта"))
 
         self.menu_file.setTitle(s["menu_file"])
         self.menu_edit.setTitle(s["menu_edit"])
@@ -94,6 +102,13 @@ class MainWindow(QMainWindow):
 
         self.menu_help_top = menu.addMenu("")
         self.menu_help_top.addActions([self.actions.menu_help, self.actions.menu_about])
+
+        self.menu_rv = menu.addMenu("РВ")
+        self.menu_rv.addActions([
+            self.actions.rv_french_phone,
+            self.actions.rv_bitcoin,
+            self.actions.rv_latitude
+        ])
 
     def add_new_tab(self, content="", title=None, file_path=None):
         if title is None:
