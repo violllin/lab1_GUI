@@ -111,7 +111,7 @@ class Parser:
             self.parse_param_list()
 
         self.match(")", sync_tokens=["->", "in"])
-        self.match("->", sync_tokens=["Int", "String", "Float", "Bool", "in", "return", "идентификатор", "константа", "("])
+        self.match("->", sync_tokens=["Int", "String", "Float", "Bool", "in"])
         self.parse_type()
         self.match("in", sync_tokens=["return", "идентификатор", "константа", "("])
         self.match("return", sync_tokens=["идентификатор", "константа", "("])
@@ -122,26 +122,67 @@ class Parser:
         self.match(";")
 
     def parse_param_list(self):
-        self.parse_param()
         while self.current_token() and self.current_token().lexeme == ",":
+            self.errors.append(ParseError(self.current_token(), "идентификатор", "Лишняя запятая"))
             self.advance()
 
-            while self.current_token() and self.current_token().lexeme == ",":
-                self.errors.append(ParseError(self.current_token(), "идентификатор", f"Лишняя запятая"))
-                self.advance()
+        self.parse_param()
 
-            if self.current_token() and self.current_token().lexeme == ")":
-                self.errors.append(ParseError(self.current_token(), "идентификатор"))
-                break
+        while self.current_token() and self.current_token().lexeme not in [")", "->", "in"]:
+            if self.current_token().lexeme == ",":
+                self.advance()
+                while self.current_token() and self.current_token().lexeme == ",":
+                    self.errors.append(ParseError(self.current_token(), "идентификатор", "Лишняя запятая"))
+                    self.advance()
+
+                if self.current_token() and self.current_token().lexeme == ")":
+                    self.errors.append(
+                        ParseError(self.current_token(), "идентификатор", "Ожидался параметр после запятой"))
+                    break
+            else:
+                if self.current_token().type_name == "идентификатор":
+                    self.errors.append(ParseError(self.current_token(), ",", "Пропущена запятая между параметрами"))
+                else:
+                    break
 
             self.parse_param()
 
     def parse_param(self):
-        self.match("идентификатор", is_type=True, sync_tokens=[":", ",", ")"])
-        self.match(":", sync_tokens=["Int", "String", "Float", "Bool", ",", ")"])
-        self.parse_type()
+        if not self.current_token() or self.current_token().lexeme in [")", "->", "in"]:
+            return
 
+        if not self.match("идентификатор", is_type=True, sync_tokens=[":", ",", ")", "->"]):
+            return
+
+        token = self.current_token()
+        types = ["Int", "String", "Float", "Bool"]
+
+        if token and token.lexeme == ":":
+            self.advance()
+            self.parse_type()
+
+        elif token and token.lexeme == ",":
+            next_t = self.tokens[self.pos + 1] if self.pos + 1 < len(self.tokens) else None
+            if next_t and next_t.lexeme in types:
+                self.errors.append(ParseError(token, ":", "Вместо двоеточия стоит запятая"))
+                self.advance()
+                self.advance()
+            else:
+                self.errors.append(ParseError(token, ":", "Пропущено двоеточие и тип данных"))
+                self.advance()
+
+        elif token and token.lexeme in types:
+            self.errors.append(ParseError(token, ":", "Пропущено двоеточие перед типом данных"))
+            self.advance()
+        else:
+            if token and token.lexeme not in [")", "->", "in"]:
+                self.errors.append(ParseError(token, ":", "Пропущено двоеточие и тип данных"))
     def parse_type(self):
+        while self.current_token() and self.current_token().lexeme == ",":
+            self.errors.append(
+                ParseError(self.current_token(), "Тип данных", f"Лишняя запятая: '{self.current_token().lexeme}'"))
+            self.advance()
+
         token = self.current_token()
         if not token:
             self.errors.append(ParseError(None, "Тип данных (Int, String, Float, Bool)"))
@@ -154,8 +195,7 @@ class Parser:
 
         self.errors.append(ParseError(token, "Тип данных (Int, String, Float, Bool)"))
 
-        sync_tokens = [",", ")", "in", "{"]
-
+        sync_tokens = [")", "in", "{", ";"]
         return self.irons_recover("Int", False, sync_tokens, error_token=token)
 
     def parse_expr(self):
