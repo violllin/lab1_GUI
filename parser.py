@@ -16,10 +16,6 @@ class Parser:
         self.errors = []
 
     def current_token(self):
-        while self.pos < len(self.tokens) and self.tokens[self.pos].is_error:
-            bad_token = self.tokens[self.pos]
-            self.errors.append(ParseError(bad_token, "правильный символ", f"Недопустимый символ: '{bad_token.lexeme}'"))
-            self.pos += 1
 
         if self.pos < len(self.tokens):
             return self.tokens[self.pos]
@@ -59,6 +55,12 @@ class Parser:
         if token and ((is_type and token.type_name == expected) or (not is_type and token.lexeme == expected)):
             self.advance()
             return True
+
+        if token and not is_type and expected == "->":
+            if token.lexeme == ">":
+                self.errors.append(ParseError(token, "->", "Опечатка в стрелке: пропущен '-'"))
+                self.advance()
+                return True
 
         if token and not is_type and expected in ["let", "return", "in"]:
             next_t = self.tokens[self.pos + 1] if self.pos + 1 < len(self.tokens) else None
@@ -177,6 +179,7 @@ class Parser:
         else:
             if token and token.lexeme not in [")", "->", "in"]:
                 self.errors.append(ParseError(token, ":", "Пропущено двоеточие и тип данных"))
+
     def parse_type(self):
         while self.current_token() and self.current_token().lexeme == ",":
             self.errors.append(
@@ -222,4 +225,4 @@ class Parser:
             self.match(")", sync_tokens=["+", "-", "*", "/", "}", ";"])
         else:
             self.errors.append(ParseError(token, "Выражение"))
-            self.irons_recover("идентификатор", True, ["+", "-", "*", "/", "}", ";", ")", "return"], error_token=token)
+            self.irons_recover("идентификатор", True, ["+", "-", "*", "/", "}", ")", "return"], error_token=token)
