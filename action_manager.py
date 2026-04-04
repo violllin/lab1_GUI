@@ -59,6 +59,7 @@ class ActionManager:
         self.rv_french_phone = QAction("Французские номера", window)
         self.rv_bitcoin = QAction("Биткоин-адреса", window)
         self.rv_latitude = QAction("Широта (градусы/мин/сек)", window)
+        self.rv_latitude_fsm = QAction("Широта (по графу автомата)", window)
         self.rv_french_phone.triggered.connect(lambda: self.ctrl.run_regex_search("phone"))
         self.rv_bitcoin.triggered.connect(lambda: self.ctrl.run_regex_search("bitcoin"))
         self.rv_latitude.triggered.connect(lambda: self.ctrl.run_regex_search("latitude"))
@@ -102,6 +103,7 @@ class ActionManager:
         self.menu_select_all.setText(s["action_select_all"])
         self.menu_help.setText(s["action_help"])
         self.menu_about.setText(s["action_about"])
+        self.rv_latitude_fsm.setText(s.get("regex_latitude_fsm", "Широта (FSM)"))
 
         for i, action in enumerate(self.text_actions):
             if i < len(s["text_items"]):
@@ -115,6 +117,7 @@ class ActionManager:
         self.rv_french_phone.triggered.connect(lambda: self.ctrl.run_regex_search("phone"))
         self.rv_bitcoin.triggered.connect(lambda: self.ctrl.run_regex_search("bitcoin"))
         self.rv_latitude.triggered.connect(lambda: self.ctrl.run_regex_search("latitude"))
+        self.rv_latitude_fsm.triggered.connect(self.ctrl.run_fsm_latitude_search)
 
         self.new_act.triggered.connect(self.ctrl.file_new)
         self.menu_new.triggered.connect(self.ctrl.file_new)

@@ -56,6 +56,8 @@ STRINGS = {
         "msg_no_data": "Нет данных для поиска",
         "msg_regex_found": "Найдено совпадений: {}",
         "action_run_regex": "Искать по РВ",
+        "regex_latitude_fsm": "Широта (автомат)",
+        "menu_rv": "РВ",
         "text_items": ["Постановка задачи", "Грамматика", "Классификация грамматики", "Метод анализа", "Тестовый пример", "Список литературы", "Исходный код"]
     },
     "en": {
@@ -114,6 +116,8 @@ STRINGS = {
         "msg_no_data": "No data to search",
         "msg_regex_found": "Matches found: {}",
         "action_run_regex": "Search Regex",
+        "regex_latitude_fsm": "Latitude (FSM)",
+        "menu_rv": "Regex",
         "text_items": ["Task Problem", "Grammar", "Grammar Classification", "Analysis Method", "Test Case", "References", "Source Code"]
     }
 }

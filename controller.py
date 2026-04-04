@@ -325,3 +325,110 @@ class EditorController:
                 table.setItem(row, col, item)
 
         self.ui.statusBar().showMessage(f"Поиск завершен. Найдено: {len(matches)}", 5000)
+
+    def run_fsm_latitude_search(self):
+        editor = self.ui.get_current_editor()
+        if not editor:
+            return
+
+        table = self.ui.output_panel.rv_table
+        table.setRowCount(0)
+        self.ui.output_panel.setCurrentIndex(1)
+
+        text = editor.toPlainText()
+
+        if not text.strip():
+            self.ui.statusBar().showMessage("Нет данных для поиска", 5000)
+            return
+
+        matches = []
+        n = len(text)
+        i = 0
+
+        while i < n:
+            states = {0}
+            match_len = -1
+
+            for j in range(i, n):
+                char = text[j]
+                next_states = set()
+
+                for state in states:
+                    if state == 0:
+                        if char in "012345678": next_states.add(1)
+                        if char == '9': next_states.add(2)
+                        if char.isdigit(): next_states.add(3)
+                    elif state == 1:
+                        if char.isdigit(): next_states.add(3)
+                    elif state == 2:
+                        if char == '0': next_states.add(3)
+                    elif state == 3:
+                        if char == '°': next_states.add(4)
+                    elif state == 4:
+                        if char in "012345": next_states.add(5)
+                        if char.isdigit(): next_states.add(6)
+                    elif state == 5:
+                        if char.isdigit(): next_states.add(6)
+                    elif state == 6:
+                        if char == "'": next_states.add(7)
+                    elif state == 7:
+                        if char in "012345": next_states.add(8)
+                        if char.isdigit(): next_states.add(9)
+                    elif state == 8:
+                        if char.isdigit(): next_states.add(9)
+                    elif state == 9:
+                        if char == '"': next_states.add(10)
+                    elif state == 10:
+                        if char in "NS": next_states.add(11)
+
+                if not next_states:
+                    break
+
+                if 11 in next_states:
+                    match_len = j - i + 1
+                    break
+
+                states = next_states
+
+
+            if match_len != -1:
+                matches.append({
+                    "start": i,
+                    "length": match_len,
+                    "text": text[i:i + match_len]
+                })
+                i += match_len
+            else:
+                i += 1
+
+        if not matches:
+            self.ui.statusBar().showMessage("Совпадений не найдено (Автомат)", 5000)
+            return
+
+        file_path = editor.property("file_path") or "New File"
+
+        for idx, match in enumerate(matches, start=1):
+            row = table.rowCount()
+            table.insertRow(row)
+
+            start_index = match["start"]
+            matched_text = match["text"]
+            length = match["length"]
+
+            line_number = text.count('\n', 0, start_index) + 1
+            last_newline = text.rfind('\n', 0, start_index)
+            column_number = start_index - last_newline if last_newline != -1 else start_index + 1
+
+            items = [
+                QTableWidgetItem(str(idx)),
+                QTableWidgetItem(file_path),
+                QTableWidgetItem(matched_text),
+                QTableWidgetItem(f"Стр: {line_number}, Кол: {column_number}"),
+                QTableWidgetItem(str(length))
+            ]
+            items[3].setData(Qt.ItemDataRole.UserRole, (line_number, column_number, length))
+
+            for col, item in enumerate(items):
+                table.setItem(row, col, item)
+
+        self.ui.statusBar().showMessage(f"Поиск (Автомат) завершен. Найдено: {len(matches)}", 5000)

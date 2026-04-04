@@ -51,6 +51,7 @@ class MainWindow(QMainWindow):
         self.actions.rv_bitcoin.setText(s.get("regex_bitcoin", "Биткоин-адреса"))
         self.actions.rv_latitude.setText(s.get("regex_latitude", "Широта"))
 
+
         self.menu_file.setTitle(s["menu_file"])
         self.menu_edit.setTitle(s["menu_edit"])
         self.menu_run.setText(s["menu_run"])
@@ -107,7 +108,8 @@ class MainWindow(QMainWindow):
         self.menu_rv.addActions([
             self.actions.rv_french_phone,
             self.actions.rv_bitcoin,
-            self.actions.rv_latitude
+            self.actions.rv_latitude,
+            self.actions.rv_latitude_fsm
         ])
 
     def add_new_tab(self, content="", title=None, file_path=None):
