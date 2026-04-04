@@ -73,7 +73,7 @@ bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4
 ##### Примеры строк, которые не должны находиться
 1A1z - слишком короткая строка 
 
-2A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa - содержит запрещенный символ O
+2A1zP1eP5QGefi2&DMPTfTL5SLmv7DivfNa - содержит запрещенный символ O
 ##### Тестовые примеры
 ![lab4_bitcoin.jpg](images/lab4_bitcoin.jpg)
 
@@ -108,5 +108,6 @@ bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4
 
 45°30'15"E - неверно, широта бывает только северной (N) или южной (S)
 ##### Граф автомата 
-
+![lab4_avtomat.drawio.png](images/lab4_avtomat.drawio.png)
 ##### Тестовые примеры
+![lab4_width.jpg](images/lab4_width.jpg)

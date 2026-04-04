@@ -324,7 +324,7 @@ class EditorController:
             for col, item in enumerate(items):
                 table.setItem(row, col, item)
 
-        self.ui.statusBar().showMessage(f"Поиск завершен. Найдено: {len(matches)}", 5000)
+        self.ui.statusBar().showMessage(f"Поиск завершен. Найдено совпадений: {len(matches)}", 5000)
 
     def run_fsm_latitude_search(self):
         editor = self.ui.get_current_editor()
@@ -346,50 +346,57 @@ class EditorController:
         i = 0
 
         while i < n:
-            states = {0}
+            state = 0
             match_len = -1
 
             for j in range(i, n):
                 char = text[j]
-                next_states = set()
+                next_state = -1
 
-                for state in states:
-                    if state == 0:
-                        if char in "012345678": next_states.add(1)
-                        if char == '9': next_states.add(2)
-                        if char.isdigit(): next_states.add(3)
-                    elif state == 1:
-                        if char.isdigit(): next_states.add(3)
-                    elif state == 2:
-                        if char == '0': next_states.add(3)
-                    elif state == 3:
-                        if char == '°': next_states.add(4)
-                    elif state == 4:
-                        if char in "012345": next_states.add(5)
-                        if char.isdigit(): next_states.add(6)
-                    elif state == 5:
-                        if char.isdigit(): next_states.add(6)
-                    elif state == 6:
-                        if char == "'": next_states.add(7)
-                    elif state == 7:
-                        if char in "012345": next_states.add(8)
-                        if char.isdigit(): next_states.add(9)
-                    elif state == 8:
-                        if char.isdigit(): next_states.add(9)
-                    elif state == 9:
-                        if char == '"': next_states.add(10)
-                    elif state == 10:
-                        if char in "NS": next_states.add(11)
+                if state == 0:
+                    if char in "012345678": next_state = 1
+                    elif char == '9': next_state = 2
+                elif state == 1:
+                    if char.isdigit(): next_state = 3
+                    elif char == '°': next_state = 4
+                elif state == 2:
+                    if char == '0': next_state = 5
+                    elif char == '°': next_state = 4
+                elif state == 3:
+                    if char == '°': next_state = 4
+                elif state == 5:
+                    if char == '°': next_state = 4
+                elif state == 4:
+                    if char in "012345": next_state = 6
+                    elif char in "6789": next_state = 7
+                elif state == 6:
+                    if char.isdigit(): next_state = 8
+                    elif char == "'": next_state = 9
+                elif state == 7:
+                    if char == "'": next_state = 9
+                elif state == 8:
+                    if char == "'": next_state = 9
+                elif state == 9:
+                    if char in "012345": next_state = 10
+                    elif char in "6789": next_state = 11
+                elif state == 10:
+                    if char.isdigit(): next_state = 12
+                    elif char == '"': next_state = 13
+                elif state == 11:
+                    if char == '"': next_state = 13
+                elif state == 12:
+                    if char == '"': next_state = 13
+                elif state == 13:
+                    if char in "NS": next_state = 14
 
-                if not next_states:
+                if next_state == -1:
                     break
 
-                if 11 in next_states:
+                state = next_state
+
+                if state == 14:
                     match_len = j - i + 1
                     break
-
-                states = next_states
-
 
             if match_len != -1:
                 matches.append({
@@ -402,7 +409,7 @@ class EditorController:
                 i += 1
 
         if not matches:
-            self.ui.statusBar().showMessage("Совпадений не найдено (Автомат)", 5000)
+            self.ui.statusBar().showMessage("Совпадений не найдено (автомат)", 5000)
             return
 
         file_path = editor.property("file_path") or "New File"
@@ -431,4 +438,4 @@ class EditorController:
             for col, item in enumerate(items):
                 table.setItem(row, col, item)
 
-        self.ui.statusBar().showMessage(f"Поиск (Автомат) завершен. Найдено: {len(matches)}", 5000)
+        self.ui.statusBar().showMessage(f"Поиск (автомат) завершен. Найдено совпадений: {len(matches)}", 5000)
