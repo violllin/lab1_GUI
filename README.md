@@ -50,7 +50,7 @@
 - letter -> 'a' | 'b' | ... | 'z' | 'A' | 'B' | 'Z'
 - digit -> '0' | '1' | ... | '9'
 - $V_T$: {'let', '=', '{', '(', ')', ':', ',', '->', 'in', 'return', 
-- '+', '-', '*', '/', ';', 'Int', 'String', 'Float', 'Bool', letter, digit}.
+'+', '-', '*', '/', ';', 'Int', 'String', 'Float', 'Bool', letter, digit}.
 - $V_N$: {START, LET, SPACE_1, VAR_NAME, ASSIGN, LBRACE, LPAREN, 
 PARAM, TYPE, PARAM_LIST, RPAREN, ARROW, RETURN_TYPE, SPACE_2, IN, SPACE_3, RETURN, SPACE_4, 
 EXPR, EXPR_TAIL, TERM, TERM_TAIL, FACTOR, CLOSE, END, IDENTIFIER, ID_TAIL, NUMBER, NUM_TAIL}.
@@ -58,7 +58,8 @@ EXPR, EXPR_TAIL, TERM, TERM_TAIL, FACTOR, CLOSE, END, IDENTIFIER, ID_TAIL, NUMBE
 
 ## Классификация грамматики (по Хомскому).
 Данная грамматика является контекстно-свободной, так как все правила вывода соответствуют 
-виду:$$A \rightarrow \alpha$$
+виду:
+$$A \rightarrow \alpha$$
 где $A \in V_N$ (в левой части строго один нетерминал), а $\alpha \in V^*$ 
 (в правой части любая цепочка из терминалов и нетерминалов)
 
