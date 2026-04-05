@@ -56,6 +56,11 @@ class Parser:
             self.advance()
             return True
 
+        if token and not is_type and expected == "in" and token.lexeme == "inreturn":
+            self.errors.append(ParseError(token, "in", "Пропущен пробел: написано 'inreturn', ожидалось 'in return'"))
+            token.lexeme = "return"
+            return True
+
         if token and not is_type and expected == "->":
             if token.lexeme == ">":
                 self.errors.append(ParseError(token, "->", "Опечатка в стрелке: пропущен '-'"))
@@ -81,7 +86,6 @@ class Parser:
 
         self.errors.append(ParseError(token, expected))
         return self.irons_recover(expected, is_type, sync_tokens, error_token=token)
-
     def recover(self, sync_tokens):
         while self.pos < len(self.tokens):
             token = self.tokens[self.pos]
@@ -178,7 +182,18 @@ class Parser:
             self.advance()
         else:
             if token and token.lexeme not in [")", "->", "in"]:
-                self.errors.append(ParseError(token, ":", "Пропущено двоеточие и тип данных"))
+                self.errors.append(ParseError(token, ":", f"Ожидалось ':', получено '{token.lexeme}'"))
+
+                while self.pos < len(self.tokens):
+                    t = self.tokens[self.pos]
+                    if t.lexeme in types or t.lexeme in [",", ")", "->", "in"]:
+                        break
+                    if t != token:
+                        self.errors.append(ParseError(t, ":", f"Лишний символ: '{t.lexeme}'"))
+                    self.pos += 1
+
+                if self.current_token() and self.current_token().lexeme in types:
+                    self.parse_type()
 
     def parse_type(self):
         while self.current_token() and self.current_token().lexeme == ",":
@@ -192,14 +207,38 @@ class Parser:
             return False
 
         types = ["Int", "String", "Float", "Bool"]
+
         if token.lexeme in types:
             self.advance()
             return True
 
+        for t in types:
+            if token.lexeme == t + "in":
+                self.errors.append(
+                    ParseError(token, "Тип данных", f"Пропущен пробел: написано '{token.lexeme}', ожидалось '{t} in'"))
+                token.lexeme = "in"
+                return True
+
+            if token.lexeme == t + "inreturn":
+                self.errors.append(ParseError(token, "Тип данных",
+                                              f"Склеивание слов: написано '{token.lexeme}', ожидалось '{t} in return'"))
+                token.lexeme = "inreturn"
+                return True
+
         self.errors.append(ParseError(token, "Тип данных (Int, String, Float, Bool)"))
 
-        sync_tokens = [")", "in", "{", ";"]
-        return self.irons_recover("Int", False, sync_tokens, error_token=token)
+        while self.pos < len(self.tokens):
+            t = self.tokens[self.pos]
+            if t.lexeme in types:
+                self.advance()
+                return True
+            if t.lexeme in [")", "in", "return", "{", "}", ";", ","]:
+                return False
+            if t != token:
+                self.errors.append(ParseError(t, "Тип данных", f"Лишний символ: '{t.lexeme}'"))
+            self.pos += 1
+
+        return False
 
     def parse_expr(self):
         self.parse_term()
