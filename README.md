@@ -109,6 +109,6 @@ bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4
 
 45°30'15"E - неверно, широта бывает только северной (N) или южной (S)
 ### Граф автомата 
-![lab4_avtomat.drawio.png](images/lab4_avtomat.drawio.png)
+![lab4_avtomat2.0.drawio.png](images/lab4_avtomat2.0.drawio.png)
 ### Тестовые примеры
 ![lab4_width.jpg](images/lab4_width.jpg)
