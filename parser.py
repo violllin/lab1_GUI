@@ -8,6 +8,9 @@ class ParseError:
             lexeme = token.lexeme if token else "конец файла"
             self.message = f"Ожидалось '{expected}', получено '{lexeme}'"
 
+class StopParsing(Exception):
+    pass
+
 class Parser:
 
     def __init__(self, tokens):
@@ -26,6 +29,7 @@ class Parser:
 
     def irons_recover(self, expected, is_type, sync_tokens, error_token=None):
         sync_list = sync_tokens or []
+        last_extra_lexeme = None
 
         while self.pos < len(self.tokens):
             token = self.tokens[self.pos]
@@ -36,7 +40,12 @@ class Parser:
                 break
 
             if token != error_token:
-                self.errors.append(ParseError(token, expected, f"Лишний символ: '{token.lexeme}'"))
+                if token.lexeme != last_extra_lexeme:
+                    self.errors.append(ParseError(token, expected, f"Лишний символ: '{token.lexeme}'"))
+                    last_extra_lexeme = token.lexeme
+            else:
+                last_extra_lexeme = token.lexeme
+
             self.pos += 1
 
         token = self.current_token()
@@ -44,13 +53,15 @@ class Parser:
             is_exp = (is_type and token.type_name == expected) or (not is_type and token.lexeme == expected)
             if is_exp:
                 self.pos += 1
-            else:
-                pass
             return True
         return False
 
     def match(self, expected, is_type=False, sync_tokens=None):
         token = self.current_token()
+
+        if token is None:
+            self.errors.append(ParseError(None, expected))
+            raise StopParsing()
 
         if token and ((is_type and token.type_name == expected) or (not is_type and token.lexeme == expected)):
             self.advance()
@@ -85,7 +96,11 @@ class Parser:
                     return True
 
         self.errors.append(ParseError(token, expected))
-        return self.irons_recover(expected, is_type, sync_tokens, error_token=token)
+
+        if not self.irons_recover(expected, is_type, sync_tokens, error_token=token):
+            raise StopParsing()
+
+        return True
     def recover(self, sync_tokens):
         while self.pos < len(self.tokens):
             token = self.tokens[self.pos]
@@ -97,7 +112,10 @@ class Parser:
         if not self.tokens:
             return self.errors
 
-        self.parse_start()
+        try:
+            self.parse_start()
+        except StopParsing:
+            pass
 
         while self.current_token() is not None:
             token = self.current_token()
@@ -183,13 +201,16 @@ class Parser:
         else:
             if token and token.lexeme not in [")", "->", "in"]:
                 self.errors.append(ParseError(token, ":", f"Ожидалось ':', получено '{token.lexeme}'"))
-
+                last_extra_lexeme = token.lexeme
                 while self.pos < len(self.tokens):
                     t = self.tokens[self.pos]
                     if t.lexeme in types or t.lexeme in [",", ")", "->", "in"]:
                         break
-                    if t != token:
+
+                    if t != token and t.lexeme != last_extra_lexeme:
                         self.errors.append(ParseError(t, ":", f"Лишний символ: '{t.lexeme}'"))
+                        last_extra_lexeme = t.lexeme
+
                     self.pos += 1
 
                 if self.current_token() and self.current_token().lexeme in types:
@@ -204,7 +225,7 @@ class Parser:
         token = self.current_token()
         if not token:
             self.errors.append(ParseError(None, "Тип данных (Int, String, Float, Bool)"))
-            return False
+            raise StopParsing()
 
         types = ["Int", "String", "Float", "Bool"]
 
@@ -226,6 +247,7 @@ class Parser:
                 return True
 
         self.errors.append(ParseError(token, "Тип данных (Int, String, Float, Bool)"))
+        last_extra_lexeme = token.lexeme
 
         while self.pos < len(self.tokens):
             t = self.tokens[self.pos]
@@ -234,11 +256,14 @@ class Parser:
                 return True
             if t.lexeme in [")", "in", "return", "{", "}", ";", ","]:
                 return False
-            if t != token:
+
+            if t != token and t.lexeme != last_extra_lexeme:
                 self.errors.append(ParseError(t, "Тип данных", f"Лишний символ: '{t.lexeme}'"))
+                last_extra_lexeme = t.lexeme
+
             self.pos += 1
 
-        return False
+        raise StopParsing()
 
     def parse_expr(self):
         self.parse_term()
