@@ -56,6 +56,44 @@ PARAM, TYPE, PARAM_LIST, RPAREN, ARROW, RETURN_TYPE, SPACE_2, IN, SPACE_3, RETUR
 EXPR, EXPR_TAIL, TERM, TERM_TAIL, FACTOR, CLOSE, END, IDENTIFIER, ID_TAIL, NUMBER, NUM_TAIL}.
 - Z = < START >
 
+## Грамматика ANTLR
+
+````
+grammar MyGrammar;
+
+startRule    : 'let' varName assign ;
+varName      : ID ;
+assign       : '=' lbrace ;
+lbrace       : '{' lparen ;
+lparen       : '(' paramList rparen ;
+paramList    : param (',' param)* | /* пусто */ ;
+param        : ID ':' typeDef ;
+typeDef      : 'Int' | 'Double' | 'Float' | 'Bool' ;
+rparen       : ')' arrow ;
+arrow        : '->' returnType ;
+returnType   : typeDef inRule ;
+inRule       : 'in' returnStmt ;
+returnStmt   : 'return' expr closeRule ;
+expr         : term exprTail ;
+exprTail     : '+' term exprTail
+             | '-' term exprTail
+             | /* пусто */ ;
+term         : factor termTail ;
+termTail     : '*' factor termTail
+             | '/' factor termTail
+             | /* пусто */ ;
+factor       : ID
+             | NUMBER
+             | '(' expr ')' ;
+closeRule    : '}' endRule ;
+endRule      : ';' ;
+
+ID           : [a-zA-Z] [a-zA-Z0-9]* ;
+NUMBER       : [0-9]+ ;
+WS           : [ \t\r\n]+ -> skip ;
+ANY : . ;
+````
+
 ## Классификация грамматики (по Хомскому).
 Данная грамматика является контекстно-свободной, так как все правила вывода соответствуют 
 виду:
