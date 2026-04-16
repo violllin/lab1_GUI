@@ -1,4 +1,5 @@
-from PyQt6.QtWidgets import QTabWidget, QTableWidget, QHeaderView
+from PyQt6.QtGui import QFont
+from PyQt6.QtWidgets import QTabWidget, QTableWidget, QHeaderView, QTextEdit
 from translations import STRINGS
 
 class OutputPanel(QTabWidget):
@@ -7,6 +8,7 @@ class OutputPanel(QTabWidget):
         self.output_table = self._create_table(5)
 
         self.addTab(self.output_table, "Вывод")
+
         self.retranslate("ru")
 
     def _create_table(self, column_count):
@@ -25,6 +27,7 @@ class OutputPanel(QTabWidget):
     def retranslate(self, lang):
         s = STRINGS[lang]
         self.setTabText(0, s.get("tab_lexer", "Вывод"))
+
 
         headers = [
             s.get("col_id", "№"),

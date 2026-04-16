@@ -1,5 +1,6 @@
 import os
-import re
+import json
+from semantic import SemanticAnalyzer
 from PyQt6.QtWidgets import QFileDialog, QMessageBox, QTableWidgetItem
 from PyQt6.QtCore import Qt
 from help_window import HelpWindow
@@ -186,23 +187,46 @@ class EditorController:
         scanner = Scanner()
         tokens = scanner.analyze(text)
         parser = Parser(tokens)
-        syntax_errors = parser.parse()
+
+        syntax_errors, ast_root = parser.parse()
+
+        semantic_errors = []
+
+        ast_display = self.ui.output_panel.ast_display
+        ast_display.clear()
+
+        if ast_root:
+            analyzer = SemanticAnalyzer()
+
+            semantic_errors = analyzer.analyze(ast_root)
+
+            print("\n  AST (JSON View)")
+            ast_json = json.dumps(ast_root.to_dict(), indent=4, ensure_ascii=False)
+            print(ast_json)
+
+            if not syntax_errors:
+                print("\n Абстрактное синтаксическое дерево (AST)")
+                print(ast_root.to_string())
+
+        all_errors = syntax_errors + semantic_errors
 
         table = self.ui.output_panel.output_table
         table.setRowCount(0)
 
-        if not syntax_errors:
+        if not all_errors:
             self.ui.statusBar().showMessage(STRINGS[self.lang]["msg_no_errors"], 5000)
             return
 
-        for i, err in enumerate(syntax_errors, start=1):
+        for i, err in enumerate(all_errors, start=1):
             row = table.rowCount()
             table.insertRow(row)
 
-            fragment = err.token.lexeme if err.token else "EOF"
-            pos_str = f"({err.token.line}, {err.token.start})" if err.token else "-"
+            is_semantic = hasattr(err, 'message') and "Семантич" in err.message
+            token = err.token
 
-            description = err.message
+            fragment = token.lexeme if token else "EOF"
+            pos_str = f"({token.line}, {token.start})" if token else "-"
+            description = err.message if is_semantic else err.message  # для ParseError это тоже message
 
             items = [
                 QTableWidgetItem(str(i)),
@@ -212,16 +236,19 @@ class EditorController:
                 QTableWidgetItem(pos_str)
             ]
 
-            if err.token:
-                length = err.token.end - err.token.start + 1
-                items[4].setData(Qt.ItemDataRole.UserRole, (err.token.line, err.token.start, length))
+            if token:
+                length = token.end - token.start + 1
+                items[4].setData(Qt.ItemDataRole.UserRole, (token.line, token.start, length))
 
             for col, item in enumerate(items):
-                item.setBackground(QColor("#ffcccc"))
+                # Семантические ошибки можно подкрасить чуть другим оттенком, например желто-оранжевым #FFE8B2
+                bg_color = "#FFE8B2" if is_semantic else "#ffcccc"
+                item.setBackground(QColor(bg_color))
                 table.setItem(row, col, item)
 
-        msg = STRINGS[self.lang]["msg_errors_found"].format(len(syntax_errors))
+        msg = STRINGS[self.lang]["msg_errors_found"].format(len(all_errors))
         self.ui.statusBar().showMessage(msg, 5000)
+
 
     def _add_token_to_table(self, table, error, index):
         row = table.rowCount()
