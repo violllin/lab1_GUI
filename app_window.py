@@ -97,6 +97,8 @@ class MainWindow(QMainWindow):
         self.menu_help_top = menu.addMenu("")
         self.menu_help_top.addActions([self.actions.menu_help, self.actions.menu_about])
 
+        menu.addAction(self.actions.show_ast_act)
+
 
     def add_new_tab(self, content="", title=None, file_path=None):
         if title is None:

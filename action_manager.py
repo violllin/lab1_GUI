@@ -11,6 +11,8 @@ class ActionManager:
 
         self.menu_antlr_run = QAction("Запустить ANTLR", window)
 
+        self.show_ast_act = QAction(window)
+
         self.new_act = QAction(style.standardIcon(style.StandardPixmap.SP_FileIcon), "", window)
         self.open_act = QAction(style.standardIcon(style.StandardPixmap.SP_DialogOpenButton), "", window)
         self.save_act = QAction(style.standardIcon(style.StandardPixmap.SP_DialogSaveButton), "", window)
@@ -96,6 +98,8 @@ class ActionManager:
         self.menu_help.setText(s["action_help"])
         self.menu_about.setText(s["action_about"])
 
+        self.show_ast_act.setText(s["menu_show_ast"])
+
         for i, action in enumerate(self.text_actions):
             if i < len(s["text_items"]):
                 action.setText(s["text_items"][i])
@@ -133,3 +137,5 @@ class ActionManager:
         self.menu_about.triggered.connect(self.ctrl.show_about)
         self.run_act.triggered.connect(self.ctrl.run_lexer)
         self.menu_run_act.triggered.connect(self.ctrl.run_lexer)
+
+        self.show_ast_act.triggered.connect(self.ctrl.show_ast_visualizer)

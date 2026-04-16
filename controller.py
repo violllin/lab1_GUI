@@ -289,3 +289,4 @@ class EditorController:
             editor.setTextCursor(cursor)
             editor.setFocus()
 
+
