@@ -179,7 +179,8 @@ class EditorController:
 
     def run_lexer(self):
         editor = self.ui.get_current_editor()
-        if not editor: return
+        if not editor:
+            return
 
         file_path = editor.property("file_path") or "New File"
         text = editor.toPlainText()
@@ -191,24 +192,18 @@ class EditorController:
         syntax_errors, ast_root = parser.parse()
 
         semantic_errors = []
+        if ast_root:
+            analyzer = SemanticAnalyzer()
+            semantic_errors = analyzer.analyze(ast_root)
+
+        all_errors = syntax_errors + semantic_errors
 
         ast_display = self.ui.output_panel.ast_display
         ast_display.clear()
 
-        if ast_root:
-            analyzer = SemanticAnalyzer()
-
-            semantic_errors = analyzer.analyze(ast_root)
-
-            print("\n  AST (JSON View)")
-            ast_json = json.dumps(ast_root.to_dict(), indent=4, ensure_ascii=False)
-            print(ast_json)
-
-            if not syntax_errors:
-                print("\n Абстрактное синтаксическое дерево (AST)")
-                print(ast_root.to_string())
-
-        all_errors = syntax_errors + semantic_errors
+        if not all_errors and ast_root:
+            ast_text = ast_root.to_string()
+            ast_display.setPlainText(ast_text)
 
         table = self.ui.output_panel.output_table
         table.setRowCount(0)
@@ -226,7 +221,7 @@ class EditorController:
 
             fragment = token.lexeme if token else "EOF"
             pos_str = f"({token.line}, {token.start})" if token else "-"
-            description = err.message if is_semantic else err.message  # для ParseError это тоже message
+            description = err.message
 
             items = [
                 QTableWidgetItem(str(i)),
@@ -241,7 +236,6 @@ class EditorController:
                 items[4].setData(Qt.ItemDataRole.UserRole, (token.line, token.start, length))
 
             for col, item in enumerate(items):
-                # Семантические ошибки можно подкрасить чуть другим оттенком, например желто-оранжевым #FFE8B2
                 bg_color = "#FFE8B2" if is_semantic else "#ffcccc"
                 item.setBackground(QColor(bg_color))
                 table.setItem(row, col, item)

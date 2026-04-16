@@ -20,7 +20,7 @@ class LetNode(AstNode):
 
     def to_string(self, prefix="", is_tail=True):
         name = self.name_tok.lexeme if self.name_tok else "None"
-        res = prefix + ("└── " if is_tail else "├── ") + f"LetDeclNode (name: {name})\n"
+        res = prefix + ("└── " if is_tail else "├── ") + f"<LET_DECL> [ID: {name}]\n"
         if self.lambda_node:
             res += self.lambda_node.to_string(prefix + ("    " if is_tail else "│   "), True)
         return res
@@ -28,29 +28,29 @@ class LetNode(AstNode):
 
 class LambdaNode(AstNode):
     def __init__(self, params, return_type_tok, body):
-        self.params = params
+        self.params = params  # Список ParamNode
         self.return_type_tok = return_type_tok
         self.body = body
 
     def to_dict(self):
         return {
             "node": "LambdaNode",
-            "return_type": self.return_type_tok.lexeme if self.return_type_tok else None,
             "params": [p.to_dict() for p in self.params],
+            "return_type": self.return_type_tok.lexeme if self.return_type_tok else None,
             "body": self.body.to_dict() if self.body else None
         }
 
     def to_string(self, prefix="", is_tail=True):
         ret_type = self.return_type_tok.lexeme if self.return_type_tok else "None"
-        res = prefix + ("└── " if is_tail else "├── ") + f"LambdaNode (return_type: {ret_type})\n"
+        res = prefix + ("└── " if is_tail else "├── ") + f"<LAMBDA> (Returns: {ret_type})\n"
         child_prefix = prefix + ("    " if is_tail else "│   ")
 
         for i, param in enumerate(self.params):
-            is_last_param = (i == len(self.params) - 1)
-            res += param.to_string(child_prefix, is_tail=(is_last_param and not self.body))
+            is_param_tail = (i == len(self.params) - 1) and (self.body is None)
+            res += param.to_string(child_prefix, is_param_tail)
 
         if self.body:
-            res += self.body.to_string(child_prefix, is_tail=True)
+            res += self.body.to_string(child_prefix, True)
         return res
 
 
@@ -68,8 +68,8 @@ class ParamNode(AstNode):
 
     def to_string(self, prefix="", is_tail=True):
         name = self.name_tok.lexeme if self.name_tok else "None"
-        t_name = self.type_tok.lexeme if self.type_tok else "None"
-        return prefix + ("└── " if is_tail else "├── ") + f"ParamNode (name: {name}, type: {t_name})\n"
+        p_type = self.type_tok.lexeme if self.type_tok else "None"
+        return prefix + ("└── " if is_tail else "├── ") + f"<PARAM> [ {name} : {p_type} ]\n"
 
 
 class BinOpNode(AstNode):
@@ -88,12 +88,12 @@ class BinOpNode(AstNode):
 
     def to_string(self, prefix="", is_tail=True):
         op = self.op_tok.lexeme if self.op_tok else "None"
-        res = prefix + ("└── " if is_tail else "├── ") + f"BinOpNode (op: '{op}')\n"
+        res = prefix + ("└── " if is_tail else "├── ") + f"<BIN_OP> '{op}'\n"
         child_prefix = prefix + ("    " if is_tail else "│   ")
         if self.left:
-            res += self.left.to_string(child_prefix, is_tail=False)
+            res += self.left.to_string(child_prefix, False)
         if self.right:
-            res += self.right.to_string(child_prefix, is_tail=True)
+            res += self.right.to_string(child_prefix, True)
         return res
 
 
@@ -102,14 +102,11 @@ class VarNode(AstNode):
         self.token = token
 
     def to_dict(self):
-        return {
-            "node": "VarNode",
-            "name": self.token.lexeme if self.token else None
-        }
+        return {"node": "VarNode", "name": self.token.lexeme if self.token else None}
 
     def to_string(self, prefix="", is_tail=True):
         name = self.token.lexeme if self.token else "None"
-        return prefix + ("└── " if is_tail else "├── ") + f"VarNode (name: {name})\n"
+        return prefix + ("└── " if is_tail else "├── ") + f"<IDENTIFIER> ({name})\n"
 
 
 class LiteralNode(AstNode):
@@ -117,11 +114,8 @@ class LiteralNode(AstNode):
         self.token = token
 
     def to_dict(self):
-        return {
-            "node": "LiteralNode",
-            "value": self.token.lexeme if self.token else None
-        }
+        return {"node": "LiteralNode", "value": self.token.lexeme if self.token else None}
 
     def to_string(self, prefix="", is_tail=True):
         val = self.token.lexeme if self.token else "None"
-        return prefix + ("└── " if is_tail else "├── ") + f"LiteralNode (value: {val})\n"
+        return prefix + ("└── " if is_tail else "├── ") + f"<NUMBER> ({val})\n"

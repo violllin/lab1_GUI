@@ -7,7 +7,12 @@ class OutputPanel(QTabWidget):
         super().__init__(parent)
         self.output_table = self._create_table(5)
 
+        self.ast_display = QTextEdit()
+        self.ast_display.setReadOnly(True)
+        self.ast_display.setFont(QFont("Consolas", 10))
+
         self.addTab(self.output_table, "Вывод")
+        self.addTab(self.ast_display, "Дерево AST")
 
         self.retranslate("ru")
 
@@ -27,6 +32,7 @@ class OutputPanel(QTabWidget):
     def retranslate(self, lang):
         s = STRINGS[lang]
         self.setTabText(0, s.get("tab_lexer", "Вывод"))
+        self.setTabText(1, s.get("tab_ast", "Дерево AST"))
 
 
         headers = [
