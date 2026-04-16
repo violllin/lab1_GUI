@@ -46,18 +46,11 @@ STRINGS = {
         "col_description": "Описание ошибки",
         "msg_no_errors": "Анализ завершен: ошибок нет",
         "msg_errors_found": "Анализ завершен: найдено ошибок - {}",
-        "tab_regex": "Регулярные выражения",
-        "regex_phone": "Французские номера",
-        "regex_bitcoin": "Биткоин-адреса",
-        "regex_latitude": "Широта (градусы)",
         "col_match": "Найденная подстрока",
         "col_len": "Длина",
         "col_pos": "Позиция",
         "msg_no_data": "Нет данных для поиска",
         "msg_regex_found": "Найдено совпадений: {}",
-        "action_run_regex": "Искать по РВ",
-        "regex_latitude_fsm": "Широта (автомат)",
-        "menu_rv": "РВ",
         "text_items": ["Постановка задачи", "Грамматика", "Классификация грамматики", "Метод анализа", "Тестовый пример", "Список литературы", "Исходный код"]
     },
     "en": {
@@ -106,18 +99,10 @@ STRINGS = {
         "col_path": "File Path",
         "msg_no_errors": "Analysis complete: no errors",
         "msg_errors_found": "Analysis complete: {} errors found",
-        "tab_regex": "Regular Expressions",
-        "regex_phone": "French Phones",
-        "regex_bitcoin": "Bitcoin Addresses",
-        "regex_latitude": "Latitude (DMS)",
         "col_match": "Found Substring",
         "col_len": "Length",
         "col_pos": "Position",
         "msg_no_data": "No data to search",
-        "msg_regex_found": "Matches found: {}",
-        "action_run_regex": "Search Regex",
-        "regex_latitude_fsm": "Latitude (FSM)",
-        "menu_rv": "Regex",
         "text_items": ["Task Problem", "Grammar", "Grammar Classification", "Analysis Method", "Test Case", "References", "Source Code"]
     }
 }
