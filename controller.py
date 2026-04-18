@@ -1,5 +1,4 @@
 import os
-import json
 from semantic import SemanticAnalyzer
 from PyQt6.QtWidgets import QFileDialog, QMessageBox, QTableWidgetItem
 from PyQt6.QtCore import Qt
@@ -191,6 +190,8 @@ class EditorController:
 
         syntax_errors, ast_root = parser.parse()
 
+        self.current_ast = ast_root
+
         semantic_errors = []
         if ast_root:
             analyzer = SemanticAnalyzer()
@@ -289,4 +290,11 @@ class EditorController:
             editor.setTextCursor(cursor)
             editor.setFocus()
 
+    def show_ast_visualizer(self):
+        if not hasattr(self, 'current_ast') or self.current_ast is None:
+            QMessageBox.warning(self.ui, "Внимание", "Сначала выполните анализ кода.")
+            return
 
+        from ast_visualizer import ASTVisualizer
+        dialog = ASTVisualizer(self.current_ast, self.ui)
+        dialog.exec()
