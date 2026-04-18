@@ -1,4 +1,5 @@
-from PyQt6.QtGui import QAction, QKeySequence
+import os
+from PyQt6.QtGui import QAction, QKeySequence, QIcon
 from translations import STRINGS
 
 class ActionManager:
@@ -6,6 +7,8 @@ class ActionManager:
         style = window.style()
         self.win = window
         self.ctrl = controller
+        base_path = os.path.dirname(__file__)
+        cut_icon_path = os.path.join(base_path, "images", "scissors.png")
 
         self.antlr_run_act = QAction(style.standardIcon(style.StandardPixmap.SP_DesktopIcon), "Run ANTLR", window)
 
@@ -17,7 +20,7 @@ class ActionManager:
         self.undo_act = QAction(style.standardIcon(style.StandardPixmap.SP_ArrowBack), "", window)
         self.redo_act = QAction(style.standardIcon(style.StandardPixmap.SP_ArrowForward), "", window)
         self.copy_act = QAction(style.standardIcon(style.StandardPixmap.SP_FileLinkIcon), "", window)
-        self.cut_act = QAction(style.standardIcon(style.StandardPixmap.SP_LineEditClearButton), "", window)
+        self.cut_act = QAction(QIcon(cut_icon_path), "", window)
         self.paste_act = QAction(style.standardIcon(style.StandardPixmap.SP_FileDialogStart), "", window)
         self.run_act = QAction(style.standardIcon(style.StandardPixmap.SP_MediaPlay), "", window)
         self.help_act = QAction(style.standardIcon(style.StandardPixmap.SP_TitleBarContextHelpButton), "", window)
