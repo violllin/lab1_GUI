@@ -55,6 +55,8 @@ STRINGS = {
         "msg_no_data": "Нет данных для поиска",
         "msg_regex_found": "Найдено совпадений: {}",
         "action_run_regex": "Искать по РВ",
+        "menu_antlr_run": "Запустить через ANTLR",
+        "menu_run_par": "Запустить парсер",
         "text_items": ["Постановка задачи", "Грамматика", "Классификация грамматики", "Метод анализа", "Тестовый пример", "Список литературы", "Исходный код"]
     },
     "en": {
@@ -112,6 +114,8 @@ STRINGS = {
         "msg_no_data": "No data to search",
         "msg_regex_found": "Matches found: {}",
         "action_run_regex": "Search Regex",
+        "menu_antlr_run": "Run with ANTLR",
+        "menu_run_par": "Run parser",
         "text_items": ["Task Problem", "Grammar", "Grammar Classification", "Analysis Method", "Test Case", "References", "Source Code"]
     }
 }

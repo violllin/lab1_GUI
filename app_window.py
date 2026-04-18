@@ -6,7 +6,7 @@ from output_widget import OutputPanel
 from controller import EditorController
 from action_manager import ActionManager
 from highlighter import PythonHighlighter
-from antlr_tool.translations import STRINGS
+from translations import STRINGS
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -45,7 +45,7 @@ class MainWindow(QMainWindow):
 
         self.menu_file.setTitle(s["menu_file"])
         self.menu_edit.setTitle(s["menu_edit"])
-        self.menu_run.setText(s["menu_run"])
+        self.menu_run.setTitle(s["menu_run"])
         self.menu_text.setTitle(s["menu_text"])
         self.menu_help_top.setTitle(s["menu_help"])
         self.menu_lang.setTitle(s["menu_lang"])
@@ -83,8 +83,9 @@ class MainWindow(QMainWindow):
         self.menu_text = menu.addMenu("")
         self.menu_text.addActions(self.actions.text_actions)
 
-        self.menu_run = menu.addAction(s["menu_run"])
-        self.menu_run.triggered.connect(self.controller.run_lexer)
+        self.menu_run = menu.addMenu(s["menu_run"])
+        self.menu_run.addAction(self.actions.run_act)
+        self.menu_run.addAction(self.actions.antlr_run_act)
 
         self.menu_lang = menu.addMenu("")
         act_ru = self.menu_lang.addAction("Русский")
@@ -157,7 +158,6 @@ class MainWindow(QMainWindow):
         self.addToolBar(toolbar)
 
         toolbar.addAction(self.actions.run_act)
-        toolbar.addAction(self.actions.antlr_run_act)
 
         toolbar.addActions([self.actions.new_act, self.actions.open_act, self.actions.save_act])
         toolbar.addSeparator()

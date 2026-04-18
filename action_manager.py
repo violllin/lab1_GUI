@@ -1,5 +1,5 @@
 from PyQt6.QtGui import QAction, QKeySequence
-from antlr_tool.translations import STRINGS
+from translations import STRINGS
 
 class ActionManager:
     def __init__(self, window, controller):
@@ -73,14 +73,15 @@ class ActionManager:
         self.copy_act.setText(s["action_copy"])
         self.cut_act.setText(s["action_cut"])
         self.paste_act.setText(s["action_paste"])
-        self.run_act.setText(s["menu_run"])
+
+        self.run_act.setText(s["menu_run_par"])
+        self.antlr_run_act.setText(s["menu_antlr_run"])
+
         self.help_act.setText(s["menu_help"])
         self.zoom_in_act.setText(s["action_zoom_in"])
         self.zoom_out_act.setText(s["action_zoom_out"])
-
         self.about_act.setText(s["action_about"])
         self.about_act.setStatusTip(s["action_about"])
-
         self.menu_new.setText(s["action_new"])
         self.menu_open.setText(s["action_open"])
         self.menu_save.setText(s["action_save"])

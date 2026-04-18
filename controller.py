@@ -2,7 +2,7 @@ import os
 from PyQt6.QtWidgets import QFileDialog, QMessageBox, QTableWidgetItem
 from PyQt6.QtCore import Qt
 from help_window import HelpWindow
-from antlr_tool.translations import STRINGS
+from translations import STRINGS
 from PyQt6.QtGui import QTextCursor, QColor
 from scanner import Scanner
 from parser import Parser
