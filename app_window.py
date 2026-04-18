@@ -80,8 +80,13 @@ class MainWindow(QMainWindow):
             [self.actions.menu_undo, self.actions.menu_redo, self.actions.menu_cut, self.actions.menu_copy,
              self.actions.menu_paste, self.actions.menu_delete, self.actions.menu_select_all])
 
-        self.menu_text = menu.addMenu("")
-        self.menu_text.addActions(self.actions.text_actions)
+        self.menu_text = menu.addMenu("Текст")
+        keys = ["task", "grammar", "classification", "method",
+                "neutralization", "test_case", "references", "source_code"]
+        for k in keys:
+            if k in self.actions.doc_actions:
+                self.menu_text.addAction(self.actions.doc_actions[k])
+
 
         self.menu_run = menu.addMenu(s["menu_run"])
         self.menu_run.addAction(self.actions.run_act)

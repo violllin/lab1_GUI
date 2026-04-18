@@ -10,6 +10,7 @@ from antlr4.error.ErrorListener import ErrorListener
 from antlr4 import InputStream, CommonTokenStream
 from antlr_tool.MyGrammarLexer import MyGrammarLexer
 from antlr_tool.MyGrammarParser import MyGrammarParser
+from info_windows import DocWindow
 
 class MyAntlrErrorListener(ErrorListener):
     def __init__(self):
@@ -170,6 +171,23 @@ class EditorController:
 
         QMessageBox.about(self.ui, title, msg)
 
+    def show_document(self, doc_type):
+        docs_map = {
+            "task": ("Постановка задачи", "docs/task.html"),
+            "grammar": ("Грамматика", "docs/grammar.html"),
+            "classification": ("Классификация грамматики", "docs/classification.html"),
+            "method": ("Метод анализа", "docs/method.html"),
+            "neutralization": ("Диагностика и нейтрализация ошибок", "docs/neutralization.html"),
+            "test_case": ("Тестовый пример", "docs/test_case.html"),
+            "references": ("Список литературы", "docs/references.html"),
+            "source_code": ("Исходный код программы", "docs/source_code.html"),
+            "help": ("Справка", "docs/help.html"),
+        }
+
+        if doc_type in docs_map:
+            title, path = docs_map[doc_type]
+            win = DocWindow(title, path, self.ui)
+            win.exec()
 
     def show_help(self):
         self.help_window = HelpWindow(self.ui, self.lang)

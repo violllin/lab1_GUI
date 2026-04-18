@@ -4,6 +4,7 @@ from translations import STRINGS
 
 class ActionManager:
     def __init__(self, window, controller):
+
         style = window.style()
         self.win = window
         self.ctrl = controller
@@ -59,15 +60,37 @@ class ActionManager:
         self.menu_help.setShortcut('F1')
         self.menu_about = QAction("", window)
 
+        self.doc_actions = {}
+        doc_keys = ["task", "grammar", "classification", "method",
+                    "neutralization", "test_case", "references", "source_code"]
+        for key in doc_keys:
+            action = QAction("", window)
+            action.triggered.connect(lambda checked, k=key: self.ctrl.show_document(k))
+            self.doc_actions[key] = action
         self.text_actions = []
-        for _ in range(len(STRINGS["ru"]["text_items"])):
-            self.text_actions.append(QAction("", window))
+
+        self.help_info_act = QAction("Вызов справки", window)
+        self.help_info_act.triggered.connect(lambda: self.ctrl.show_document("help"))
 
         self.retranslate_actions("ru")
         self._connect_signals()
 
     def retranslate_actions(self, lang):
         s = STRINGS[lang]
+        doc_map = {
+            "task": "doc_task",
+            "grammar": "doc_grammar",
+            "classification": "doc_classification",
+            "method": "doc_method",
+            "neutralization": "doc_neutralization",
+            "test_case": "doc_test_case",
+            "references": "doc_references",
+            "source_code": "doc_source_code"
+        }
+        for key, lang_key in doc_map.items():
+            if key in self.doc_actions:
+                self.doc_actions[key].setText(s.get(lang_key, key))
+
         self.new_act.setText(s["action_new"])
         self.open_act.setText(s["action_open"])
         self.save_act.setText(s["action_save"])
@@ -101,9 +124,6 @@ class ActionManager:
         self.menu_help.setText(s["action_help"])
         self.menu_about.setText(s["action_about"])
 
-        for i, action in enumerate(self.text_actions):
-            if i < len(s["text_items"]):
-                action.setText(s["text_items"][i])
 
     def _connect_signals(self):
 

@@ -57,7 +57,14 @@ STRINGS = {
         "action_run_regex": "Искать по РВ",
         "menu_antlr_run": "Запустить через ANTLR",
         "menu_run_par": "Запустить парсер",
-        "text_items": ["Постановка задачи", "Грамматика", "Классификация грамматики", "Метод анализа", "Тестовый пример", "Список литературы", "Исходный код"]
+        "doc_task": "Постановка задачи",
+        "doc_grammar": "Грамматика",
+        "doc_classification": "Классификация грамматики",
+        "doc_method": "Метод анализа",
+        "doc_neutralization": "Диагностика и нейтрализация ошибок",
+        "doc_test_case": "Тестовый пример",
+        "doc_references": "Список литературы",
+        "doc_source_code": "Исходный код программы"
     },
     "en": {
         "window_title": "Text Editor",
@@ -116,6 +123,13 @@ STRINGS = {
         "action_run_regex": "Search Regex",
         "menu_antlr_run": "Run with ANTLR",
         "menu_run_par": "Run parser",
-        "text_items": ["Task Problem", "Grammar", "Grammar Classification", "Analysis Method", "Test Case", "References", "Source Code"]
+        "doc_task": "Task Statement",
+        "doc_grammar": "Grammar",
+        "doc_classification": "Grammar Classification",
+        "doc_method": "Analysis Method",
+        "doc_neutralization": "Error Recovery",
+        "doc_test_case": "Test Case",
+        "doc_references": "References",
+        "doc_source_code": "Source Code"
     }
 }
