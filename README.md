@@ -46,11 +46,8 @@ let calc = { (a: Int) -> Int in return a + b };
 ![LAB5_COMPLIER.drawio.png](images/LAB5_COMPLIER.drawio.png)
 
 ### Формат вывода AST в программе
-Строка: "let calc = { (a: Int, b: Int, c: Int) -> Int in
-return a + (b * c)};"
 ![LAB5_TEXTTREE_1.png](images/LAB5_TEXTTREE_1.png)
 
-Строка: "let calc = { (a: String) -> String in return a + a };"
 ![LAB5_TEXTTREE_2.png](images/LAB5_TEXTTREE_2.png)
 
 ## Тестовые примеры 
@@ -68,14 +65,16 @@ return a + (b * c)};"
 
 ## Дополнительное задание
 ### Использованные графические средства
-
+Визуализация построена на PyQt6 с использованием модулей QGraphicsScene и QGraphicsView.
 
 ## Тестовые примеры 
 Строка: "let calc = { (a: Int, b: Int, c: Int) -> Int in
 return a + (b * c)};"
+
 ![LAB5_DOP1.jpg](images/LAB5_DOP1.jpg)
 
 Строка: "let calc = { (a: String) -> String in return a + a };"
+
 ![LAB5_DOP2.jpg](images/LAB5_DOP2.jpg)
 
 
