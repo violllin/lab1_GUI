@@ -41,14 +41,42 @@ let calc = { (a: Int) -> Int in return a + b };
 ## Структура AST
 ### Описание узлов 
 
+
 ### Рисунок AST для верной строки 
 ![LAB5_COMPLIER.drawio.png](images/LAB5_COMPLIER.drawio.png)
 
 ### Формат вывода AST в программе
+Строка: "let calc = { (a: Int, b: Int, c: Int) -> Int in
+return a + (b * c)};"
+![LAB5_TEXTTREE_1.png](images/LAB5_TEXTTREE_1.png)
+
+Строка: "let calc = { (a: String) -> String in return a + a };"
+![LAB5_TEXTTREE_2.png](images/LAB5_TEXTTREE_2.png)
 
 ## Тестовые примеры 
+### Уникальность идентификаторов
+![LAB5_RULES1.jpg](images/LAB5_RULES1.jpg)
+
+### Совместимость типов
+![LAB5_RULES2.jpg](images/LAB5_RULES2.jpg)
+
+### Допустимые значения
+![LAB5_RULES1.jpg](images/LAB5_RULES1.jpg)
+
+### Использование идентификаторов
+![LAB5_RULES4.jpg](images/LAB5_RULES4.jpg)
+
+## Дополнительное задание
+### Использованные графические средства
 
 
+## Тестовые примеры 
+Строка: "let calc = { (a: Int, b: Int, c: Int) -> Int in
+return a + (b * c)};"
+![LAB5_DOP1.jpg](images/LAB5_DOP1.jpg)
+
+Строка: "let calc = { (a: String) -> String in return a + a };"
+![LAB5_DOP2.jpg](images/LAB5_DOP2.jpg)
 
 
 ## Инструкция по запуску

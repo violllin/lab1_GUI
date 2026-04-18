@@ -56,7 +56,7 @@ class SemanticAnalyzer:
 
         if node.return_type_tok and expr_type != "Unknown":
             decl_type = node.return_type_tok.lexeme
-            if decl_type == "Int" and expr_type not in ["Int"]:
+            if decl_type != expr_type:
                 self.errors.append(SemanticError(node.return_type_tok,
                                                  f"Семантическая ошибка: выражение возвращает '{expr_type}', а ожидается '{decl_type}'"))
 
