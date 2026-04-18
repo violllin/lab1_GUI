@@ -147,9 +147,29 @@ class EditorController:
         return True
 
     def show_about(self):
-        title = STRINGS[self.lang]["action_about"]
-        msg = "Text Editor\nTab functionality implemented" if self.lang == "en" else "Текстовый редактор\nРеализован функционал вкладок"
-        QMessageBox.information(self.ui, title, msg)
+        title = STRINGS[self.lang].get("action_about", "О программе")
+
+        if self.lang == "en":
+            msg = (
+                "<h3>Language Processor</h2>"
+                "<p><b>Version:</b> 1.0.0</p>"
+                "<p><b>Author:</b> Violetta Izhboldina (Group AVT-313)</p>"
+                "<p>This program is designed for syntax analysis of <b>Swift Lambda expressions</b> "
+                "using the Irons method for error neutralization.</p>"
+                "<p><i>Functionality:</i> Multi-tab editor, lexical and syntax analysis.</p>"
+            )
+        else:
+            msg = (
+                "<h3>Языковой процессор</h2>"
+                "<p><b>Версия:</b> 1.0.0</p>"
+                "<p><b>Автор:</b> Ижболдина Виолетта (гр. АВТ-313)</p>"
+                "<p>Программа предназначена для синтаксического анализа <b>лямбда-выражений Swift</b> "
+                "с использованием метода Айронса для нейтрализации ошибок."
+                "<p>Функционал:</i> многовкладочный редактор, лексический и синтаксический анализ.</p>"
+            )
+
+        QMessageBox.about(self.ui, title, msg)
+
 
     def show_help(self):
         self.help_window = HelpWindow(self.ui, self.lang)
