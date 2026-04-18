@@ -81,8 +81,7 @@ class MainWindow(QMainWindow):
              self.actions.menu_paste, self.actions.menu_delete, self.actions.menu_select_all])
 
         self.menu_text = menu.addMenu("Текст")
-        keys = ["task", "grammar", "classification", "method",
-                "neutralization", "test_case", "references", "source_code"]
+        keys = ["task", "grammar", "classification", "method", "test_case", "references", "source_code"]
         for k in keys:
             if k in self.actions.doc_actions:
                 self.menu_text.addAction(self.actions.doc_actions[k])

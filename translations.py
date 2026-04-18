@@ -61,7 +61,6 @@ STRINGS = {
         "doc_grammar": "Грамматика",
         "doc_classification": "Классификация грамматики",
         "doc_method": "Метод анализа",
-        "doc_neutralization": "Диагностика и нейтрализация ошибок",
         "doc_test_case": "Тестовый пример",
         "doc_references": "Список литературы",
         "doc_source_code": "Исходный код программы"
@@ -127,7 +126,6 @@ STRINGS = {
         "doc_grammar": "Grammar",
         "doc_classification": "Grammar Classification",
         "doc_method": "Analysis Method",
-        "doc_neutralization": "Error Recovery",
         "doc_test_case": "Test Case",
         "doc_references": "References",
         "doc_source_code": "Source Code"

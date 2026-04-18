@@ -177,7 +177,6 @@ class EditorController:
             "grammar": ("Грамматика", "docs/grammar.html"),
             "classification": ("Классификация грамматики", "docs/classification.html"),
             "method": ("Метод анализа", "docs/method.html"),
-            "neutralization": ("Диагностика и нейтрализация ошибок", "docs/neutralization.html"),
             "test_case": ("Тестовый пример", "docs/test_case.html"),
             "references": ("Список литературы", "docs/references.html"),
             "source_code": ("Исходный код программы", "docs/source_code.html"),

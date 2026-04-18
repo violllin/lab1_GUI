@@ -61,8 +61,7 @@ class ActionManager:
         self.menu_about = QAction("", window)
 
         self.doc_actions = {}
-        doc_keys = ["task", "grammar", "classification", "method",
-                    "neutralization", "test_case", "references", "source_code"]
+        doc_keys = ["task", "grammar", "classification", "method", "test_case", "references", "source_code"]
         for key in doc_keys:
             action = QAction("", window)
             action.triggered.connect(lambda checked, k=key: self.ctrl.show_document(k))
@@ -82,7 +81,6 @@ class ActionManager:
             "grammar": "doc_grammar",
             "classification": "doc_classification",
             "method": "doc_method",
-            "neutralization": "doc_neutralization",
             "test_case": "doc_test_case",
             "references": "doc_references",
             "source_code": "doc_source_code"
