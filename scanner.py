@@ -66,7 +66,7 @@ class Scanner:
                 lexeme = char
                 i += 1
                 col += 1
-                while i < len(text) and text[i].isalpha():
+                while i < len(text) and text[i].isalnum():
                     lexeme += text[i]
                     i += 1
                     col += 1
@@ -107,8 +107,13 @@ class Scanner:
                 col += 1
                 continue
 
-            tokens.append(Token("ERROR", "недопустимый символ", char, line, start_col, col, is_error=True))
+            lexeme = char
             i += 1
             col += 1
+            while i < len(text) and text[i] not in '\t\n\r ' and text[i] not in self.single_chars:
+                lexeme += text[i]
+                i += 1
+                col += 1
+            tokens.append(Token("ERROR", "недопустимый символ", lexeme, line, start_col, col - 1, is_error=True))
 
         return tokens

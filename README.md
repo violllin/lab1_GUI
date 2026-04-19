@@ -11,9 +11,9 @@
 ### Вариант:
 87, Лямбда-выражение на языке Swift
 ### Примеры корректных строк: 
-1. let calc = { (a: Int, b: Int, c: Int) -> Int in \
-    return a + (b * c)\
-};
+1. let calc = { (a: Int, b: Int, c: Int) -> Int in 
+    return a + (b * c)};
+
 2. let simple = { (s: String) -> String in return s };
 
 ## Разработка грамматики
