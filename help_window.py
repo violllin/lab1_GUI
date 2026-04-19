@@ -83,7 +83,7 @@ class HelpWindow(QDialog):
                     <b>Редактор кода</b> — поддерживает автоматическую нумерацию строк и подсветку синтаксиса (синий для ключевых слов, зеленый для строк, серый для комментариев и оранжевый для чисел).<br>
                     <b>Таблица результатов</b> — отображает найденные в ходе анализа ошибки. Содержит столбцы: №, Местоположение (строка, символ), Описание ошибки и Неверный фрагмент. Система настроена на строгую локализацию: одна фактическая ошибка генерирует ровно одно точное сообщение в таблице.<br>
                 </div>
-                <p align='center'><img src='images/help/workspace.jpg' width='450'></p>
+                <p align='center'><img src='images/help/work_space.jpg' width='450'></p>
             </body>
             </html>
             """,
@@ -93,7 +93,7 @@ class HelpWindow(QDialog):
                 <h1 style='color: black; border-bottom: 2px solid black; font-size: 24px;'>Program Functions Description</h1>
 
                 <p>Main program window with workspace and results table:</p>
-                <p align='center'><img src='images/help/main_window.jpg' width='450'></p>
+                <p align='center'><img src='images/help/main_window_en.jpg' width='450'></p>
 
                 <h2 style='color: black; font-size: 20px;'> "File" Menu</h2>
                 <div style='margin-left: 20px;'>
@@ -103,7 +103,7 @@ class HelpWindow(QDialog):
                     <b>Save As</b> — allows saving the document under a new name.<br>
                     <b>Exit</b> — closes the application (with a prompt to save changes).<br>
                 </div>
-                <p align='center'><img src='images/help/menu_file.jpg' width='450'></p>
+                <p align='center'><img src='images/help/menu_file_en.jpg' width='450'></p>
 
                 <h2 style='color: black; font-size: 20px;'> "Edit" Menu</h2>
                 <div style='margin-left: 20px;'>
@@ -115,7 +115,7 @@ class HelpWindow(QDialog):
                     <b>Delete</b> — clears the selected text fragment.<br>
                     <b>Select All</b> — highlights all text in the current editing window.<br>
                 </div>
-                <p align='center'><img src='images/help/menu_edit.jpg' width='450'></p>
+                <p align='center'><img src='images/help/menu_edit_en.jpg' width='450'></p>
 
                 <h2 style='color: black; font-size: 20px;'> "Text" Menu</h2>
                 <div style='margin-left: 20px;'>
@@ -128,27 +128,27 @@ class HelpWindow(QDialog):
                     <b>References</b> — displays the list of used sources.<br>
                     <b>Program Source Code</b> — opens the listing of the application's own code.<br>
                 </div>
-                <p align='center'><img src='images/help/menu_text.jpg' width='450'></p>
+                <p align='center'><img src='images/help/menu_text_en.jpg' width='450'></p>
 
                 <h2 style='color: black; font-size: 20px;'> "Run" Menu</h2>
                 <div style='margin-left: 20px;'>
                     <b>Run Parser</b> — initiates the analysis of the code in the active tab. Performs lexical and syntax analysis with results output to the table.<br>
                 </div>
-                <p align='center'><img src='images/help/menu_run.jpg' width='450'></p>
+                <p align='center'><img src='images/help/menu_run_en.jpg' width='450'></p>
 
                 <h2 style='color: black; font-size: 20px;'> "Help" Menu</h2>
                 <div style='margin-left: 20px;'>
                     <b>View Help</b> — opens this user manual.<br>
                     <b>About</b> — displays developer info, project theme, and version.<br>
                 </div>
-                <p align='center'><img src='images/help/menu_help.jpg' width='450'></p>
+                <p align='center'><img src='images/help/menu_help_en.jpg' width='450'></p>
 
                 <h2 style='color: black; font-size: 20px;'>Toolbar</h2>
                 <p>For quick access to core operations, a toolbar is provided below the main menu:</p>
                 <div style='margin-left: 20px;'>
                     The panel includes buttons for: Create, Open, Save, Undo, Redo, Copy, Cut, Paste, Run Parser, and View Help. A <b>Font Zoom</b> tool is also available for quick adjustment of the editor text size.<br>
                 </div>
-                <p align='center'><img src='images/help/toolbar.jpg' width='450'></p>
+                <p align='center'><img src='images/help/toolbar_en.jpg' width='450'></p>
 
                 <h2 style='color: black; font-size: 20px;'>Workspace and Error Handling</h2>
                 <div style='margin-left: 20px;'>
@@ -156,7 +156,7 @@ class HelpWindow(QDialog):
                     <b>Code Editor</b> — supports automatic line numbering and syntax highlighting (Blue for keywords, Green for strings, Gray for comments, and Orange for numbers).<br>
                     <b>Results Table</b> — displays errors found during analysis. Columns include: No., Location (line, char), Error Description, and Invalid Fragment. The system is tuned for strict localization: one actual error generates exactly one precise message in the table.<br>
                 </div>
-                <p align='center'><img src='images/help/workspace.jpg' width='450'></p>
+                <p align='center'><img src='images/help/work_space_en.jpg' width='450'></p>
             </body>
             </html>
             """
