@@ -29,28 +29,30 @@ class Parser:
         self.pos += 1
 
     def add_error(self, token, expected, message=""):
-        if not self.panic_mode:
+        if self.panic_mode:
+            return
+
+        current_pos = (token.line, token.start) if token else (0, 0)
+
+        if not self.errors or (self.errors[-1].token.line, self.errors[-1].token.start) != current_pos:
             self.errors.append(ParseError(token, expected, message))
-            self.panic_mode = True
+
+        self.panic_mode = True
 
     def irons_recover(self, expected, is_type, sync_tokens):
         sync_list = sync_tokens or []
 
-        if self.pos < len(self.tokens):
-            err_lexeme = self.tokens[self.pos].lexeme
-            while self.pos + 1 < len(self.tokens) and self.tokens[self.pos + 1].lexeme == err_lexeme:
-                self.pos += 1
+        while self.pos < len(self.tokens):
+            token = self.tokens[self.pos]
 
-        temp_pos = self.pos
-        while temp_pos < len(self.tokens):
-            token = self.tokens[temp_pos]
-            is_exp = (is_type and token.type_name == expected) or (not is_type and token.lexeme == expected)
-            is_sync = token.lexeme in sync_list or token.type_name in sync_list
+            is_matched = (is_type and token.type_name == expected) or \
+                         (not is_type and token.lexeme == expected)
 
-            if is_exp or is_sync:
-                self.pos = temp_pos
+            if is_matched or token.lexeme in sync_list or token.type_name in sync_list:
+                self.panic_mode = False
                 return True
-            temp_pos += 1
+
+            self.advance()
 
         return False
 
@@ -61,7 +63,9 @@ class Parser:
             self.add_error(None, expected)
             raise StopParsing()
 
-        is_matched = (is_type and token.type_name == expected) or (not is_type and token.lexeme == expected)
+        is_matched = (is_type and token.type_name == expected) or \
+                     (not is_type and token.lexeme == expected)
+
         if is_matched:
             self.advance()
             self.panic_mode = False
@@ -74,7 +78,8 @@ class Parser:
 
         curr = self.current_token()
         if curr:
-            is_exp = (is_type and curr.type_name == expected) or (not is_type and curr.lexeme == expected)
+            is_exp = (is_type and curr.type_name == expected) or \
+                     (not is_type and curr.lexeme == expected)
             if is_exp:
                 self.advance()
                 self.panic_mode = False
@@ -85,79 +90,60 @@ class Parser:
         if not self.tokens:
             return self.errors
 
-        while self.pos < len(self.tokens):
-            try:
-                self.parse_start()
-            except StopParsing:
-                self.recover_to_next_statement()
+        try:
+            self.parse_start()
+        except StopParsing:
+            pass
 
         return self.errors
 
-    def recover_to_next_statement(self):
-        if self.pos < len(self.tokens):
-            self.pos += 1
-        self.panic_mode = False
-
     def parse_start(self):
-        self.match("let", sync_tokens=["идентификатор", "=", "{"])
-        self.match("идентификатор", is_type=True, sync_tokens=["=", "{", "("])
-        self.match("=", sync_tokens=["{", "("])
-        self.match("{", sync_tokens=["(", "идентификатор"])
-        self.match("(", sync_tokens=["идентификатор", ")", "->"])
+        # let <id> = {
+        self.match("let", sync_tokens=["="])
+        self.match("идентификатор", is_type=True, sync_tokens=["="])
+        self.match("=", sync_tokens=["{"])
+        self.match("{", sync_tokens=["("])
+
+        self.parse_lambda_body()
+
+        self.match("}", sync_tokens=[";"])
+        self.match(";", sync_tokens=[])
+
+    def parse_lambda_body(self):
+        self.match("(", sync_tokens=[")", "->"])
 
         if self.current_token() and self.current_token().lexeme != ")":
-            self.parse_param_list()
+            self.parse_params()
 
-        self.match(")", sync_tokens=["->", "in"])
-        self.match("->", sync_tokens=["Int", "String", "Float", "Bool", "in"])
+        self.match(")", sync_tokens=["->"])
+        self.match("->", sync_tokens=["Int", "String", "Bool", "Float", "in"])
         self.parse_type()
-        self.match("in", sync_tokens=["return", "идентификатор", "константа", "("])
-        self.match("return", sync_tokens=["идентификатор", "константа", "(", "}"])
+        self.match("in", sync_tokens=["return"])
+        self.match("return", sync_tokens=["+", "-", "(", "идентификатор", "константа"])
 
         self.parse_expr()
 
-        self.match("}", sync_tokens=[";", "let"])
-        self.match(";", sync_tokens=["let"])
-        self.panic_mode = False
-
-    def parse_param_list(self):
+    def parse_params(self):
         self.parse_param()
         while self.current_token() and self.current_token().lexeme == ",":
-            self.match(",")
-            if self.current_token() and self.current_token().lexeme != ")":
-                self.parse_param()
+            self.advance()
+            self.parse_param()
 
     def parse_param(self):
-        if not self.current_token() or self.current_token().lexeme in [")", "->", "in"]:
-            return
-
-        self.match("идентификатор", is_type=True, sync_tokens=[":", ",", ")", "->"])
-        self.match(":", sync_tokens=["Int", "String", "Float", "Bool", ",", ")"])
+        self.match("идентификатор", is_type=True, sync_tokens=[":", ",", ")"])
+        self.match(":", sync_tokens=["Int", "String", "Bool", "Float", ",", ")"])
         self.parse_type()
 
     def parse_type(self):
         token = self.current_token()
-        if not token:
-            self.add_error(None, "Тип данных")
-            raise StopParsing()
-
-        types = ["Int", "String", "Float", "Bool"]
-        if token.lexeme in types:
+        types = ["Int", "String", "Bool", "Float"]
+        if token and token.lexeme in types:
             self.advance()
             self.panic_mode = False
-            return True
-
-        self.add_error(token, "Тип данных (Int, String, Float, Bool)")
-
-        sync_list = types + [")", "in", ",", "return", "}", ";"]
-        if not self.irons_recover("Int", False, sync_list):
-            raise StopParsing()
-
-        curr = self.current_token()
-        if curr and curr.lexeme in types:
-            self.advance()
-            self.panic_mode = False
-        return True
+        else:
+            self.add_error(token, "Тип данных (Int, String...)")
+            if not self.irons_recover("", False, [",", ")", "->", "in", "return", "идентификатор"]):
+                raise StopParsing()
 
     def parse_expr(self):
         self.parse_term()
@@ -187,15 +173,15 @@ class Parser:
             self.match(")", sync_tokens=["+", "-", "*", "/", "}", ";"])
         else:
             self.add_error(token, "Выражение")
-            if not self.irons_recover("идентификатор", True, ["}", ")", "return", ";"]):
+            if not self.irons_recover("идентификатор", True, ["константа", "(", "}", ")", "return", ";"]):
                 raise StopParsing()
 
             curr = self.current_token()
-            if curr and curr.type_name in ["идентификатор", "константа"]:
-                self.advance()
+            if curr:
+                if curr.lexeme == "(":
+                    self.advance()
+                    self.parse_expr()
+                    self.match(")")
+                elif curr.type_name in ["идентификатор", "константа"]:
+                    self.advance()
                 self.panic_mode = False
-            elif curr and curr.lexeme == "(":
-                self.advance()
-                self.panic_mode = False
-                self.parse_expr()
-                self.match(")", sync_tokens=["+", "-", "*", "/", "}", ";"])
