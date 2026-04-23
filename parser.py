@@ -49,7 +49,6 @@ class Parser:
                          (not is_type and token.lexeme == expected)
 
             if is_matched or token.lexeme in sync_list or token.type_name in sync_list:
-                self.panic_mode = False
                 return True
 
             self.advance()
@@ -182,6 +181,7 @@ class Parser:
                     self.advance()
                     self.parse_expr()
                     self.match(")")
+                    self.panic_mode = False
                 elif curr.type_name in ["идентификатор", "константа"]:
                     self.advance()
-                self.panic_mode = False
+                    self.panic_mode = False
