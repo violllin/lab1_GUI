@@ -72,7 +72,8 @@ class Parser:
                 curr = self.tokens[temp_pos]
                 nxt = self.tokens[temp_pos + 1]
                 if curr.line == nxt.line and nxt.start <= curr.end + 1:
-                    if getattr(nxt, 'is_error', False) or nxt.type_name == "недопустимый символ" or nxt.lexeme in ["?", "@"]:
+                    if getattr(nxt, 'is_error', False) or nxt.type_name == "недопустимый символ" or nxt.lexeme in ["?",
+                                                                                                                   "@"]:
                         has_error_attached = True
                         break
                     temp_pos += 1
@@ -114,7 +115,9 @@ class Parser:
             curr = self.tokens[self.pos]
             nxt = self.tokens[self.pos + 1]
             if curr.line == nxt.line and nxt.start <= curr.end + 1:
-                if getattr(nxt, 'is_error', False) or nxt.type_name in ["недопустимый символ", "идентификатор"] or nxt.lexeme in ["-", ",", "?", "@"]:
+                if getattr(nxt, 'is_error', False) or nxt.type_name in ["недопустимый символ",
+                                                                        "идентификатор"] or nxt.lexeme in ["-", ",",
+                                                                                                           "?", "@"]:
                     self.advance()
                 else:
                     break
@@ -136,20 +139,25 @@ class Parser:
     def parse(self):
         if not self.tokens:
             return self.errors
-        try:
-            self.parse_start()
-        except StopParsing:
-            pass
+
+        while self.pos < len(self.tokens):
+            try:
+                self.parse_statement()
+            except StopParsing:
+                while self.pos < len(self.tokens) and self.current_token().lexeme != "let":
+                    self.advance()
+                self.panic_mode = False
+
         return self.errors
 
-    def parse_start(self):
+    def parse_statement(self):
         self.match("let", sync_tokens=["идентификатор", "="])
         self.match("идентификатор", is_type=True, sync_tokens=["="])
         self.match("=", sync_tokens=["{"])
         self.match("{", sync_tokens=["("])
         self.parse_lambda_body()
         self.match("}", sync_tokens=[";"])
-        self.match(";", sync_tokens=[])
+        self.match(";", sync_tokens=["let"])
 
     def parse_lambda_body(self):
         self.match("(", sync_tokens=[")", "->"])
