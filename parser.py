@@ -72,8 +72,7 @@ class Parser:
                 curr = self.tokens[temp_pos]
                 nxt = self.tokens[temp_pos + 1]
                 if curr.line == nxt.line and nxt.start <= curr.end + 1:
-                    if getattr(nxt, 'is_error', False) or nxt.type_name == "недопустимый символ" or nxt.lexeme in ["?",
-                                                                                                                   "@"]:
+                    if getattr(nxt, 'is_error', False) or nxt.type_name == "недопустимый символ" or nxt.lexeme in ["?", "@"]:
                         has_error_attached = True
                         break
                     temp_pos += 1
@@ -90,7 +89,7 @@ class Parser:
 
         if expected == "->" and token.lexeme in ["-", ">"]:
             self.add_error(token, "->")
-            while self.current_token() and self.current_token().lexeme in ["-", ">"]:
+            while self.current_token() and self.current_token().lexeme in ["-", ">", "->"]:
                 self.advance()
             self.panic_mode = False
             return True
@@ -115,9 +114,7 @@ class Parser:
             curr = self.tokens[self.pos]
             nxt = self.tokens[self.pos + 1]
             if curr.line == nxt.line and nxt.start <= curr.end + 1:
-                if getattr(nxt, 'is_error', False) or nxt.type_name in ["недопустимый символ",
-                                                                        "идентификатор"] or nxt.lexeme in ["-", ",",
-                                                                                                           "?", "@"]:
+                if getattr(nxt, 'is_error', False) or nxt.type_name in ["недопустимый символ", "идентификатор"] or nxt.lexeme in ["-", ",", "?", "@"]:
                     self.advance()
                 else:
                     break
@@ -173,8 +170,19 @@ class Parser:
             self.parse_param()
 
             token = self.current_token()
-            if not token or token.lexeme == ")" or token.lexeme == "->":
+            if not token or token.lexeme == "->":
                 break
+
+            if token.lexeme == ")":
+                next_t = self.peek()
+                if next_t and next_t.lexeme in ["->", "in", "{"]:
+                    break
+                else:
+                    self.add_error(token, "продолжение параметров (',') или '->'")
+                    self.advance()
+                    token = self.current_token()
+                    if not token:
+                        break
 
             if token.lexeme == ",":
                 self.advance()
@@ -189,8 +197,8 @@ class Parser:
                     break
 
     def parse_param(self):
-        self.match("идентификатор", is_type=True, sync_tokens=[":", ",", ")"])
-        self.match(":", sync_tokens=["Int", "String", "Bool", "Float", ",", ")"])
+        self.match("идентификатор", is_type=True, sync_tokens=[":", ",", "->"])
+        self.match(":", sync_tokens=["Int", "String", "Bool", "Float", ",", "->"])
         self.parse_type()
 
     def parse_type(self):
@@ -201,7 +209,7 @@ class Parser:
             self.panic_mode = False
         else:
             self.add_error(token, "Тип данных (Int, String, Float, Bool)")
-            if not self.irons_recover("", False, [",", ")", "in", "->"]):
+            if not self.irons_recover("", False, [",", "in", "->"]):
                 raise StopParsing()
 
     def parse_expr(self):
