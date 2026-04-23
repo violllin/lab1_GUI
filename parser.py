@@ -65,6 +65,24 @@ class Parser:
         is_matched = (is_type and token.type_name == expected) or \
                      (not is_type and token.lexeme == expected)
 
+        if is_matched and expected == "идентификатор":
+            has_error_attached = False
+            temp_pos = self.pos
+            while temp_pos + 1 < len(self.tokens):
+                curr = self.tokens[temp_pos]
+                nxt = self.tokens[temp_pos + 1]
+                if curr.line == nxt.line and nxt.start <= curr.end + 1:
+                    if getattr(nxt, 'is_error', False) or nxt.type_name == "недопустимый символ" or nxt.lexeme in ["?",
+                                                                                                                   "@"]:
+                        has_error_attached = True
+                        break
+                    temp_pos += 1
+                else:
+                    break
+
+            if has_error_attached:
+                is_matched = False
+
         if is_matched:
             self.advance()
             self.panic_mode = False
@@ -78,13 +96,33 @@ class Parser:
             return True
 
         keywords = ["let", "in", "return", "Int", "String", "Float", "Bool"]
-        if not is_type and expected in keywords and token.type_name == "идентификатор":
+        if not is_matched and not is_type and expected in keywords and token.type_name == "идентификатор":
             self.add_error(token, expected)
+            while self.pos + 1 < len(self.tokens):
+                curr = self.tokens[self.pos]
+                nxt = self.tokens[self.pos + 1]
+                if curr.line == nxt.line and nxt.start <= curr.end + 1:
+                    self.advance()
+                else:
+                    break
             self.advance()
             self.panic_mode = False
             return True
 
         self.add_error(token, expected)
+
+        while self.pos + 1 < len(self.tokens):
+            curr = self.tokens[self.pos]
+            nxt = self.tokens[self.pos + 1]
+            if curr.line == nxt.line and nxt.start <= curr.end + 1:
+                if getattr(nxt, 'is_error', False) or nxt.type_name in ["недопустимый символ",
+                                                                        "идентификатор"] or nxt.lexeme in ["-", ",",
+                                                                                                           "?", "@"]:
+                    self.advance()
+                else:
+                    break
+            else:
+                break
 
         if not self.irons_recover(expected, is_type, sync_tokens):
             raise StopParsing()
