@@ -110,7 +110,7 @@ class Scanner:
             lexeme = char
             i += 1
             col += 1
-            while i < len(text) and text[i] not in '\t\n\r ' and text[i] not in self.single_chars:
+            while i < len(text) and text[i] not in '\t\n\r ' and text[i] not in self.single_chars and not text[i].isalpha() and not text[i].isdigit():
                 lexeme += text[i]
                 i += 1
                 col += 1
