@@ -45,34 +45,11 @@ class Parser:
 
     def skip_corrupted_word(self, failed_token, expected):
         self.advance()
-
-        is_keyword = expected in ["let", "in", "return", "Int", "String", "Float", "Bool"]
-
         while self.current_token():
             curr = self.tokens[self.pos]
             prev = self.tokens[self.pos - 1]
-
-            if curr.lexeme == failed_token.lexeme:
-                self.advance()
-                continue
-
             if prev.line == curr.line and curr.start <= prev.end + 1:
-                if curr.lexeme in ["{", "}", "(", ")", ";", ",", ":"] and curr.lexeme != failed_token.lexeme:
-                    break
-
-                is_curr_error = getattr(curr, 'is_error', False) or curr.type_name == "недопустимый символ"
-                is_failed_error = getattr(failed_token, 'is_error',
-                                          False) or failed_token.type_name == "недопустимый символ"
-                is_prev_error = getattr(prev, 'is_error', False) or prev.type_name == "недопустимый символ"
-
-                if is_curr_error or is_failed_error:
-                    self.advance()
-                elif is_prev_error and curr.type_name in ["идентификатор", "константа", "ключевое слово"]:
-                    self.advance()
-                elif is_keyword:
-                    self.advance()
-                else:
-                    break
+                self.advance()
             else:
                 break
 
@@ -80,13 +57,18 @@ class Parser:
         sync_list = sync_tokens or []
         while self.pos < len(self.tokens):
             token = self.tokens[self.pos]
-            is_matched = (is_type and token.type_name == expected) or \
-                         (not is_type and token.lexeme == expected)
-
-            if is_matched or token.lexeme in sync_list or token.type_name in sync_list:
+            if self.check_match(token, expected, is_type) or token.lexeme in sync_list or token.type_name in sync_list:
                 return True
             self.advance()
         return False
+
+    def check_match(self, token, expected, is_type):
+        if expected.startswith("Тип данных"):
+            return token.lexeme in ["Int", "String", "Bool", "Float"]
+        if expected == "Выражение":
+            return token.type_name in ["идентификатор", "константа"] or token.lexeme == "("
+        return (is_type and token.type_name == expected) or \
+            (not is_type and token.lexeme == expected)
 
     def match(self, expected, is_type=False, sync_tokens=None):
         token = self.current_token()
@@ -95,52 +77,95 @@ class Parser:
             self.add_error(None, expected)
             raise StopParsing()
 
-        is_matched = (is_type and token.type_name == expected) or \
-                     (not is_type and token.lexeme == expected)
-
-        if is_matched and expected == "идентификатор":
-            temp_pos = self.pos
-            has_error_attached = False
-            while temp_pos + 1 < len(self.tokens):
-                curr = self.tokens[temp_pos]
-                nxt = self.tokens[temp_pos + 1]
-                if curr.line == nxt.line and nxt.start <= curr.end + 1:
-                    if nxt.lexeme in ["{", "}", "(", ")", ";", ",", ":"]:
-                        break
-                    if getattr(nxt, 'is_error', False) or nxt.type_name == "недопустимый символ" or nxt.lexeme in ["?",
-                                                                                                                   "@",
-                                                                                                                   "!",
-                                                                                                                   "%",
-                                                                                                                   "^",
-                                                                                                                   "&",
-                                                                                                                   "*"]:
-                        has_error_attached = True
-                        break
-                    temp_pos += 1
-                else:
-                    break
-
-            if has_error_attached:
-                is_matched = False
-
-        if is_matched:
+        if self.check_match(token, expected, is_type):
             self.advance()
             self.panic_mode = False
             return True
 
-        if expected == "->" and token.lexeme in ["-", ">", "="]:
-            self.add_error(token, "->")
-            self.skip_corrupted_word(token, expected)
-            self.panic_mode = False
-            return True
+        contiguous = [token]
+        pos = self.pos
+        while pos + 1 < len(self.tokens):
+            c_t = self.tokens[pos]
+            n_t = self.tokens[pos + 1]
+            if c_t.line == n_t.line and n_t.start <= c_t.end + 1:
+                contiguous.append(n_t)
+                pos += 1
+            else:
+                break
 
-        keywords = ["let", "in", "return", "Int", "String", "Float", "Bool"]
-        if not is_matched and not is_type and expected in keywords and token.type_name == "идентификатор":
+        combined_str = "".join(t.lexeme for t in contiguous)
+
+        keywords = ["let", "in", "return", "Int", "String", "Float", "Bool", "->"]
+        if not is_type and (expected in keywords or expected.startswith("Тип данных")):
+            target_keywords = ["Int", "String", "Float", "Bool"] if expected.startswith("Тип данных") else [expected]
+            import re
+            stripped = re.sub(r'[^a-zA-Z0-9\->]', '', combined_str)
+            matched_kw = None
+            for kw in target_keywords:
+                if stripped == kw or kw in combined_str:
+                    matched_kw = kw
+                    break
+            if matched_kw:
+                syn_token = type(token)(token.code, token.type_name, combined_str, token.line, token.start,
+                                        contiguous[-1].end)
+                self.add_error(syn_token, expected)
+                self.pos += len(contiguous)
+                self.panic_mode = False
+                return True
+
+        if is_type and expected == "идентификатор":
+            has_id = any(t.type_name == "идентификатор" for t in contiguous)
+            has_err = any(
+                getattr(t, 'is_error', False) or t.type_name == "недопустимый символ" or t.lexeme in ["@", "?", "!",
+                                                                                                      "%", "^", "&",
+                                                                                                      ">>>", "<<<"] for
+                t in contiguous)
+            if has_id and has_err:
+                corrupt_tokens = []
+                for t in contiguous:
+                    if t.type_name == "идентификатор" or getattr(t, 'is_error',
+                                                                 False) or t.type_name == "недопустимый символ" or t.lexeme in [
+                        "@", "?", "!", "%", "^", "&"]:
+                        corrupt_tokens.append(t)
+                    else:
+                        break
+                if corrupt_tokens:
+                    corrupt_str = "".join(t.lexeme for t in corrupt_tokens)
+                    syn_token = type(token)(token.code, "идентификатор", corrupt_str, token.line, token.start,
+                                            corrupt_tokens[-1].end)
+                    self.add_error(syn_token, expected)
+                    self.pos += len(corrupt_tokens)
+                    self.panic_mode = False
+                    return True
+
+        # 3. Лишний токен (сразу за ним идет ожидаемый)
+        nxt = self.peek()
+        if nxt and self.check_match(nxt, expected, is_type):
             self.add_error(token, expected)
-            self.skip_corrupted_word(token, expected)
+            self.advance()  # пропускаем лишний символ
+            self.advance()  # забираем ожидаемый
             self.panic_mode = False
             return True
 
+        # 4. Повторяющиеся символы (например, +++ или ,,,)
+        if len(contiguous) > 1 and all(t.lexeme == token.lexeme for t in contiguous):
+            syn_token = type(token)(token.code, token.type_name, combined_str, token.line, token.start,
+                                    contiguous[-1].end)
+            self.add_error(syn_token, expected)
+            self.pos += len(contiguous)
+            self.panic_mode = False
+            return True
+
+        # 5. Пропущенный токен (текущий токен относится к следующей части грамматики)
+        if sync_tokens:
+            if self.check_match(token, sync_tokens[0], False) or \
+                    (len(sync_tokens) > 1 and (token.lexeme in sync_tokens or token.type_name in sync_tokens)):
+                self.add_error(token, expected)
+                # НЕ делаем advance(), оставляем токен для следующего правила
+                self.panic_mode = False
+                return True
+
+        # 6. Резервное восстановление Айронса
         self.add_error(token, expected)
         self.skip_corrupted_word(token, expected)
 
@@ -148,12 +173,9 @@ class Parser:
             raise StopParsing()
 
         curr = self.current_token()
-        if curr:
-            is_exp = (is_type and curr.type_name == expected) or \
-                     (not is_type and curr.lexeme == expected)
-            if is_exp:
-                self.advance()
-                self.panic_mode = False
+        if curr and self.check_match(curr, expected, is_type):
+            self.advance()
+            self.panic_mode = False
         return True
 
     def parse(self):
@@ -187,10 +209,10 @@ class Parser:
             self.parse_params()
 
         self.match(")", sync_tokens=["->"])
-        self.match("->", sync_tokens=["Int", "String", "Bool", "Float", "in"])
+        self.match("->", sync_tokens=["Тип данных (Int, String, Float, Bool)", "Int", "String", "Bool", "Float", "in"])
         self.parse_type()
         self.match("in", sync_tokens=["return"])
-        self.match("return", sync_tokens=["+", "-", "(", "идентификатор", "константа"])
+        self.match("return", sync_tokens=["+", "-", "(", "идентификатор", "константа", "Выражение"])
         self.parse_expr()
 
     def parse_params(self):
@@ -205,33 +227,20 @@ class Parser:
                 break
 
             if token.lexeme == ",":
-                self.advance()
-                next_t = self.current_token()
-                if next_t and next_t.lexeme == ")":
-                    self.add_error(next_t, "идентификатор")
-            elif token.type_name == "идентификатор":
-                self.add_error(token, ",")
-                continue
+                self.match(",")
             else:
-                if not self.irons_recover(",", False, [")", "->"]):
+                if not self.irons_recover(",", False, [")", "->", "идентификатор"]):
                     break
 
     def parse_param(self):
         self.match("идентификатор", is_type=True, sync_tokens=[":", ",", "->"])
-        self.match(":", sync_tokens=["Int", "String", "Bool", "Float", ",", "->"])
+        self.match(":",
+                   sync_tokens=["Тип данных (Int, String, Float, Bool)", "Int", "String", "Bool", "Float", ",", "->"])
         self.parse_type()
 
+    # Оптимизировано с использованием новой системы проверок
     def parse_type(self):
-        token = self.current_token()
-        types = ["Int", "String", "Bool", "Float"]
-        if token and token.lexeme in types:
-            self.advance()
-            self.panic_mode = False
-        else:
-            self.add_error(token, "Тип данных (Int, String, Float, Bool)")
-            self.skip_corrupted_word(token, "Тип данных")
-            if not self.irons_recover("", False, [",", "in", "->", ")"]):
-                raise StopParsing()
+        self.match("Тип данных (Int, String, Float, Bool)", sync_tokens=[",", "in", "->", ")"])
 
     def parse_expr(self):
         self.parse_term()
@@ -260,8 +269,4 @@ class Parser:
             self.parse_expr()
             self.match(")", sync_tokens=["+", "-", "*", "/", "}", ";"])
         else:
-            self.add_error(token, "Выражение")
-            self.skip_corrupted_word(token, "Выражение")
-            if not self.irons_recover("идентификатор", True,
-                                      ["константа", "(", "}", ")", ";", "+", "-", "*", "/", "%"]):
-                raise StopParsing()
+            self.match("Выражение", sync_tokens=["+", "-", "*", "/", "}", ")", ";"])
