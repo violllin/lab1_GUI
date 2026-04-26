@@ -43,12 +43,36 @@ class Parser:
 
         self.panic_mode = True
 
-    def skip_attached(self):
-        while self.pos + 1 < len(self.tokens):
+    def skip_corrupted_word(self, failed_token, expected):
+        self.advance()
+
+        is_keyword = expected in ["let", "in", "return", "Int", "String", "Float", "Bool"]
+
+        while self.current_token():
             curr = self.tokens[self.pos]
-            nxt = self.tokens[self.pos + 1]
-            if curr.line == nxt.line and nxt.start <= curr.end + 1:
+            prev = self.tokens[self.pos - 1]
+
+            if curr.lexeme == failed_token.lexeme:
                 self.advance()
+                continue
+
+            if prev.line == curr.line and curr.start <= prev.end + 1:
+                if curr.lexeme in ["{", "}", "(", ")", ";", ",", ":"] and curr.lexeme != failed_token.lexeme:
+                    break
+
+                is_curr_error = getattr(curr, 'is_error', False) or curr.type_name == "недопустимый символ"
+                is_failed_error = getattr(failed_token, 'is_error',
+                                          False) or failed_token.type_name == "недопустимый символ"
+                is_prev_error = getattr(prev, 'is_error', False) or prev.type_name == "недопустимый символ"
+
+                if is_curr_error or is_failed_error:
+                    self.advance()
+                elif is_prev_error and curr.type_name in ["идентификатор", "константа", "ключевое слово"]:
+                    self.advance()
+                elif is_keyword:
+                    self.advance()
+                else:
+                    break
             else:
                 break
 
@@ -81,12 +105,21 @@ class Parser:
                 curr = self.tokens[temp_pos]
                 nxt = self.tokens[temp_pos + 1]
                 if curr.line == nxt.line and nxt.start <= curr.end + 1:
-                    if getattr(nxt, 'is_error', False) or nxt.type_name == "недопустимый символ" or nxt.lexeme in ["?", "@", "!", "%", "^", "&", "*"]:
+                    if nxt.lexeme in ["{", "}", "(", ")", ";", ",", ":"]:
+                        break
+                    if getattr(nxt, 'is_error', False) or nxt.type_name == "недопустимый символ" or nxt.lexeme in ["?",
+                                                                                                                   "@",
+                                                                                                                   "!",
+                                                                                                                   "%",
+                                                                                                                   "^",
+                                                                                                                   "&",
+                                                                                                                   "*"]:
                         has_error_attached = True
                         break
                     temp_pos += 1
                 else:
                     break
+
             if has_error_attached:
                 is_matched = False
 
@@ -97,22 +130,19 @@ class Parser:
 
         if expected == "->" and token.lexeme in ["-", ">", "="]:
             self.add_error(token, "->")
-            self.skip_attached()
-            self.advance()
+            self.skip_corrupted_word(token, expected)
             self.panic_mode = False
             return True
 
         keywords = ["let", "in", "return", "Int", "String", "Float", "Bool"]
         if not is_matched and not is_type and expected in keywords and token.type_name == "идентификатор":
             self.add_error(token, expected)
-            self.skip_attached()
-            self.advance()
+            self.skip_corrupted_word(token, expected)
             self.panic_mode = False
             return True
 
         self.add_error(token, expected)
-        self.skip_attached()
-        self.advance()
+        self.skip_corrupted_word(token, expected)
 
         if not self.irons_recover(expected, is_type, sync_tokens):
             raise StopParsing()
@@ -199,9 +229,8 @@ class Parser:
             self.panic_mode = False
         else:
             self.add_error(token, "Тип данных (Int, String, Float, Bool)")
-            self.skip_attached()
-            self.advance()
-            if not self.irons_recover("", False, [",", "in", "->"]):
+            self.skip_corrupted_word(token, "Тип данных")
+            if not self.irons_recover("", False, [",", "in", "->", ")"]):
                 raise StopParsing()
 
     def parse_expr(self):
@@ -232,7 +261,7 @@ class Parser:
             self.match(")", sync_tokens=["+", "-", "*", "/", "}", ";"])
         else:
             self.add_error(token, "Выражение")
-            self.skip_attached()
-            self.advance()
-            if not self.irons_recover("идентификатор", True, ["константа", "(", "}", ")", ";", "+", "-", "*", "/", "%"]):
+            self.skip_corrupted_word(token, "Выражение")
+            if not self.irons_recover("идентификатор", True,
+                                      ["константа", "(", "}", ")", ";", "+", "-", "*", "/", "%"]):
                 raise StopParsing()
