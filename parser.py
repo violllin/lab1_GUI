@@ -40,7 +40,7 @@ class Parser:
 
     def check_match(self, token, expected, is_type):
         if expected.startswith("Тип данных"):
-            return token.lexeme in ["Int", "String", "Bool", "Float"]
+            return token.lexeme in ["Int", "String", "Bool", "Float", "Double"]
         if expected == "Выражение":
             return token.type_name in ["идентификатор", "константа"] or token.lexeme == "("
         return (is_type and token.type_name == expected) or \
@@ -59,47 +59,42 @@ class Parser:
             return True
 
         sync_list = sync_tokens or []
-        skipped_tokens = []
 
-        structural_sync_symbols = {"(", ")", "{", "}", ":", ";", ",", "=", "->"}
+        if token.lexeme in sync_list or token.type_name in sync_list:
+            self.add_error(token, expected)
+            return True
+
+        skipped_tokens = [token]
+        self.advance()
 
         while self.pos < len(self.tokens):
             curr = self.tokens[self.pos]
+            last_skipped = skipped_tokens[-1]
 
-            is_part_of_contiguous_garbage = False
-            if skipped_tokens:
-                last_skipped = skipped_tokens[-1]
-                if last_skipped.line == curr.line and curr.start <= last_skipped.end + 1:
-                    if curr.lexeme in sync_list and curr.lexeme in structural_sync_symbols:
-                        is_part_of_contiguous_garbage = False
-                    else:
-                        is_part_of_contiguous_garbage = True
+            is_touching = (curr.line == last_skipped.line and curr.start <= last_skipped.end + 1)
+            is_same_lexeme = (curr.lexeme == last_skipped.lexeme)
 
-            if not is_part_of_contiguous_garbage:
-                if self.check_match(curr, expected, is_type):
-                    break
+            if is_touching or is_same_lexeme:
                 if curr.lexeme in sync_list or curr.type_name in sync_list:
                     break
+                skipped_tokens.append(curr)
+                self.advance()
+            else:
+                break
 
-            skipped_tokens.append(curr)
-            self.advance()
+        bad_fragment = "".join(t.lexeme for t in skipped_tokens)
+        err_token = type(token)(token.code, token.type_name, bad_fragment,
+                                skipped_tokens[0].line, skipped_tokens[0].start,
+                                skipped_tokens[-1].end)
 
-        if skipped_tokens:
-            bad_fragment = "".join(t.lexeme for t in skipped_tokens)
-            err_token = type(token)(token.code, token.type_name, bad_fragment,
-                                    skipped_tokens[0].line, skipped_tokens[0].start,
-                                    skipped_tokens[-1].end)
-            self.add_error(err_token, expected)
-        else:
-            self.add_error(token, expected)
+        self.add_error(err_token, expected)
 
         curr = self.current_token()
         if curr and self.check_match(curr, expected, is_type):
             self.advance()
             self.panic_mode = False
-            return True
-        else:
-            return True
+
+        return True
 
     def parse(self):
         if not self.tokens:
@@ -116,27 +111,26 @@ class Parser:
         return self.errors
 
     def parse_statement(self):
-        self.match("let", sync_tokens=["идентификатор", "="])
-        self.match("идентификатор", is_type=True, sync_tokens=["=", "{", "("])
-        self.match("=", sync_tokens=["{", "("])
-        self.match("{", sync_tokens=["(", "идентификатор"])
+        self.match("let", sync_tokens=["идентификатор"])
+        self.match("идентификатор", is_type=True, sync_tokens=["="])
+        self.match("=", sync_tokens=["{"])
+        self.match("{", sync_tokens=["("])
         self.parse_lambda_body()
         self.match("}", sync_tokens=[";"])
         self.match(";", sync_tokens=["let"])
 
     def parse_lambda_body(self):
-        self.match("(", sync_tokens=[")", "->", "Тип данных (Int, String, Float, Bool)"])
+        self.match("(", sync_tokens=["идентификатор", ")"])
 
         curr = self.current_token()
         if curr and curr.lexeme != ")":
             self.parse_params()
 
-        self.match(")", sync_tokens=["->", "Тип данных (Int, String, Float, Bool)", "in"])
-        self.match("->", sync_tokens=["Тип данных (Int, String, Float, Bool)", "Int", "String", "Bool", "Float", "in",
-                                      "return"])
+        self.match(")", sync_tokens=["->"])
+        self.match("->", sync_tokens=["Тип данных (Int, String, Float, Bool)"])
         self.parse_type()
-        self.match("in", sync_tokens=["return", "+", "-", "идентификатор", "константа"])
-        self.match("return", sync_tokens=["+", "-", "(", "идентификатор", "константа", "Выражение", "}"])
+        self.match("in", sync_tokens=["return"])
+        self.match("return", sync_tokens=["идентификатор", "константа", "(", "Выражение"])
         self.parse_expr()
 
     def parse_params(self):
@@ -148,9 +142,7 @@ class Parser:
             self.parse_param()
 
             token = self.current_token()
-            if not token or token.lexeme == "->":
-                break
-            if token.lexeme == ")":
+            if not token or token.lexeme in ["->", ")"]:
                 break
 
             if token.lexeme == ",":
@@ -158,15 +150,15 @@ class Parser:
                 self.match(",")
 
                 if self.current_token() and self.current_token().lexeme == ",":
-                    extra_commas = []
+                    err_tokens = []
                     while self.current_token() and self.current_token().lexeme == ",":
-                        extra_commas.append(self.current_token())
+                        err_tokens.append(self.current_token())
                         self.advance()
 
-                    bad_fragment = "".join(t.lexeme for t in extra_commas)
+                    bad_fragment = "".join(t.lexeme for t in err_tokens)
                     err_token = type(token)(token.code, token.type_name, bad_fragment,
-                                            extra_commas[0].line, extra_commas[0].start,
-                                            extra_commas[-1].end)
+                                            err_tokens[0].line, err_tokens[0].start,
+                                            err_tokens[-1].end)
                     self.add_error(err_token, "идентификатор", f"Лишние символы: '{bad_fragment}'")
 
                 if self.current_token() and self.current_token().lexeme == ")":
@@ -176,28 +168,77 @@ class Parser:
                 if not self.panic_mode:
                     self.add_error(token, ",")
                     self.panic_mode = True
+                self.advance()
 
     def parse_param(self):
-        self.match("идентификатор", is_type=True, sync_tokens=[":", ",", ")", "->"])
-        self.match(":",
-                   sync_tokens=["Тип данных (Int, String, Float, Bool)", "Int", "String", "Bool", "Float", ",", ")",
-                                "->"])
+        self.match("идентификатор", is_type=True, sync_tokens=[":"])
+        self.match(":", sync_tokens=["Тип данных (Int, String, Float, Bool)"])
         self.parse_type()
 
     def parse_type(self):
-        self.match("Тип данных (Int, String, Float, Bool)", sync_tokens=[",", "in", "->", ")"])
+        self.match("Тип данных (Int, String, Float, Bool)", sync_tokens=[",", ")", "in", "->"])
 
     def parse_expr(self):
         self.parse_term()
-        while self.current_token() and self.current_token().lexeme in ["+", "-"]:
-            self.match(self.current_token().lexeme)
-            self.parse_term()
+        while self.current_token():
+            curr = self.current_token()
+            if curr.lexeme in ["+", "-"]:
+                self.match(curr.lexeme)
+                self.parse_term()
+            elif curr.lexeme in ["*", "/", "%", ")", "}", ";", ",", "in", "return", "->", "=", "{", ":"]:
+                break
+            else:
+                err_tokens = [curr]
+                self.advance()
+                while self.current_token():
+                    next_tok = self.current_token()
+                    last_tok = err_tokens[-1]
+                    is_touching = (next_tok.line == last_tok.line and next_tok.start <= last_tok.end + 1)
+                    is_same = (next_tok.lexeme == last_tok.lexeme)
+                    if is_touching or is_same:
+                        if next_tok.lexeme in ["+", "-", "*", "/", "%", ")", "}", ";", ",", "in", "return", "->", "=",
+                                               "{", ":"]:
+                            break
+                        err_tokens.append(next_tok)
+                        self.advance()
+                    else:
+                        break
+                bad_fragment = "".join(t.lexeme for t in err_tokens)
+                err_token = type(err_tokens[0])(err_tokens[0].code, err_tokens[0].type_name, bad_fragment,
+                                                err_tokens[0].line, err_tokens[0].start,
+                                                err_tokens[-1].end)
+                self.add_error(err_token, "Выражение", f"Неожиданный символ в выражении: '{bad_fragment}'")
 
     def parse_term(self):
         self.parse_factor()
-        while self.current_token() and self.current_token().lexeme in ["*", "/", "%"]:
-            self.match(self.current_token().lexeme)
-            self.parse_factor()
+        while self.current_token():
+            curr = self.current_token()
+            if curr.lexeme in ["*", "/", "%"]:
+                self.match(curr.lexeme)
+                self.parse_factor()
+            elif curr.lexeme in ["+", "-", ")", "}", ";", ",", "in", "return", "->", "=", "{", ":"]:
+                break
+            else:
+                err_tokens = [curr]
+                self.advance()
+                while self.current_token():
+                    next_tok = self.current_token()
+                    last_tok = err_tokens[-1]
+                    is_touching = (next_tok.line == last_tok.line and next_tok.start <= last_tok.end + 1)
+                    is_same = (next_tok.lexeme == last_tok.lexeme)
+                    if is_touching or is_same:
+                        if next_tok.lexeme in ["+", "-", "*", "/", "%", ")", "}", ";", ",", "in", "return", "->", "=",
+                                               "{", ":"]:
+                            break
+                        err_tokens.append(next_tok)
+                        self.advance()
+                    else:
+                        break
+                bad_fragment = "".join(t.lexeme for t in err_tokens)
+                err_token = type(err_tokens[0])(err_tokens[0].code, err_tokens[0].type_name, bad_fragment,
+                                                err_tokens[0].line, err_tokens[0].start,
+                                                err_tokens[-1].end)
+                self.add_error(err_token, "Выражение", f"Неожиданный символ в выражении: '{bad_fragment}'")
 
     def parse_factor(self):
         token = self.current_token()
