@@ -59,30 +59,30 @@ class Parser:
             return True
 
         sync_list = sync_tokens or []
-
-        if token.lexeme in sync_list or token.type_name in sync_list:
-            self.add_error(token, expected)
-            return True
-
         skipped_tokens = [token]
         self.advance()
 
         while self.pos < len(self.tokens):
             curr = self.tokens[self.pos]
-            last_skipped = skipped_tokens[-1]
+            last = skipped_tokens[-1]
 
-            is_touching = (curr.line == last_skipped.line and curr.start <= last_skipped.end + 1)
-            is_same_lexeme = (curr.lexeme == last_skipped.lexeme)
+            is_touching = (curr.line == last.line and curr.start <= last.end + 1)
+            is_same = (curr.lexeme == last.lexeme)
 
-            if is_touching or is_same_lexeme:
-                if curr.lexeme in sync_list or curr.type_name in sync_list:
+            if is_touching or is_same:
+                if self.check_match(curr, expected, is_type):
                     break
                 skipped_tokens.append(curr)
                 self.advance()
             else:
                 break
 
-        bad_fragment = "".join(t.lexeme for t in skipped_tokens)
+        if len(skipped_tokens) == 1 and (token.lexeme in sync_list or token.type_name in sync_list):
+            self.pos -= 1
+            bad_fragment = token.lexeme
+        else:
+            bad_fragment = "".join(t.lexeme for t in skipped_tokens)
+
         err_token = type(token)(token.code, token.type_name, bad_fragment,
                                 skipped_tokens[0].line, skipped_tokens[0].start,
                                 skipped_tokens[-1].end)
@@ -147,7 +147,7 @@ class Parser:
 
             if token.lexeme == ",":
                 comma_token = token
-                self.match(",")
+                self.match(",", sync_tokens=["идентификатор", ")"])
 
                 if self.current_token() and self.current_token().lexeme == ",":
                     err_tokens = []
@@ -196,8 +196,7 @@ class Parser:
                     is_touching = (next_tok.line == last_tok.line and next_tok.start <= last_tok.end + 1)
                     is_same = (next_tok.lexeme == last_tok.lexeme)
                     if is_touching or is_same:
-                        if next_tok.lexeme in ["+", "-", "*", "/", "%", ")", "}", ";", ",", "in", "return", "->", "=",
-                                               "{", ":"]:
+                        if next_tok.lexeme in ["+", "-", "*", "/", "%", ")", "}", ";", ",", "in", "return", "->", "=", "{", ":"] and not is_touching:
                             break
                         err_tokens.append(next_tok)
                         self.advance()
@@ -227,8 +226,7 @@ class Parser:
                     is_touching = (next_tok.line == last_tok.line and next_tok.start <= last_tok.end + 1)
                     is_same = (next_tok.lexeme == last_tok.lexeme)
                     if is_touching or is_same:
-                        if next_tok.lexeme in ["+", "-", "*", "/", "%", ")", "}", ";", ",", "in", "return", "->", "=",
-                                               "{", ":"]:
+                        if next_tok.lexeme in ["+", "-", "*", "/", "%", ")", "}", ";", ",", "in", "return", "->", "=", "{", ":"] and not is_touching:
                             break
                         err_tokens.append(next_tok)
                         self.advance()
