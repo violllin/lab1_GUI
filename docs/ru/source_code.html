@@ -2,6 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
+    <title>Source Code: Scanner & Parser</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -12,7 +13,7 @@
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 10px;
+            margin-top: 20px;
             border: 1px solid #ddd;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
@@ -176,6 +177,305 @@
             tokens.append(Token(<span class="string">"ERROR"</span>, <span class="string">"недопустимый символ"</span>, lexeme, line, start_col, col - 1, is_error=True))
 
         return tokens</code></pre>
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+<table>
+    <thead>
+        <tr>
+            <th>Файл: parser.py</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+<pre><code><span class="keyword">class</span> <span class="class">ParseError</span>:
+    <span class="keyword">def</span> <span class="def">__init__</span>(self, token, expected, message=""):
+        self.token = token
+        self.expected = expected
+        if message:
+            self.message = message
+        else:
+            lexeme = token.lexeme if token else <span class="string">"конец файла"</span>
+            self.message = f<span class="string">"Ожидалось '{expected}', получено '{lexeme}'"</span>
+
+
+<span class="keyword">class</span> <span class="class">StopParsing</span>(Exception):
+    <span class="keyword">pass</span>
+
+
+<span class="keyword">class</span> <span class="class">Parser</span>:
+    <span class="keyword">def</span> <span class="def">__init__</span>(self, tokens):
+        self.tokens = [t <span class="keyword">for</span> t <span class="keyword">in</span> tokens <span class="keyword">if</span> t.code != 14]
+        self.pos = 0
+        self.errors = []
+        self.panic_mode = False
+
+    <span class="keyword">def</span> <span class="def">current_token</span>(self):
+        <span class="keyword">if</span> self.pos < len(self.tokens):
+            <span class="keyword">return</span> self.tokens[self.pos]
+        <span class="keyword">return</span> None
+
+    <span class="keyword">def</span> <span class="def">advance</span>(self):
+        self.pos += 1
+
+    <span class="keyword">def</span> <span class="def">add_error</span>(self, token, expected, message=""):
+        <span class="keyword">if</span> self.panic_mode:
+            <span class="keyword">return</span>
+
+        current_pos = (token.line, token.start) <span class="keyword">if</span> token <span class="keyword">else</span> (0, 0)
+        <span class="keyword">if</span> <span class="keyword">not</span> self.errors <span class="keyword">or</span> (self.errors[-1].token.line, self.errors[-1].token.start) != current_pos:
+            self.errors.append(ParseError(token, expected, message))
+
+        self.panic_mode = True
+
+    <span class="keyword">def</span> <span class="def">check_match</span>(self, token, expected, is_type):
+        <span class="keyword">if</span> expected.startswith(<span class="string">"Тип данных"</span>):
+            <span class="keyword">return</span> token.lexeme <span class="keyword">in</span> [<span class="string">"Int"</span>, <span class="string">"String"</span>, <span class="string">"Bool"</span>, <span class="string">"Float"</span>, <span class="string">"Double"</span>]
+        <span class="keyword">if</span> expected == <span class="string">"Выражение"</span>:
+            <span class="keyword">return</span> token.type_name <span class="keyword">in</span> [<span class="string">"идентификатор"</span>, <span class="string">"константа"</span>] <span class="keyword">or</span> token.lexeme == <span class="string">"("</span>
+        <span class="keyword">return</span> (is_type <span class="keyword">and</span> token.type_name == expected) <span class="keyword">or</span> \
+            (<span class="keyword">not</span> is_type <span class="keyword">and</span> token.lexeme == expected)
+
+    <span class="keyword">def</span> <span class="def">match</span>(self, expected, is_type=False, sync_tokens=None):
+        token = self.current_token()
+
+        <span class="keyword">if</span> <span class="keyword">not</span> token:
+            self.add_error(None, expected)
+            <span class="keyword">raise</span> StopParsing()
+
+        <span class="keyword">if</span> self.check_match(token, expected, is_type):
+            self.advance()
+            self.panic_mode = False
+            <span class="keyword">return</span> True
+
+        sync_list = sync_tokens <span class="keyword">or</span> []
+        skipped_tokens = [token]
+        self.advance()
+
+        <span class="keyword">while</span> self.pos < len(self.tokens):
+            curr = self.tokens[self.pos]
+            last = skipped_tokens[-1]
+
+            is_touching = (curr.line == last.line <span class="keyword">and</span> curr.start <= last.end + 1)
+            is_same = (curr.lexeme == last.lexeme)
+
+            <span class="keyword">if</span> is_touching <span class="keyword">or</span> is_same:
+                <span class="keyword">if</span> self.check_match(curr, expected, is_type):
+                    <span class="keyword">break</span>
+
+                skipped_tokens.append(curr)
+                self.advance()
+            <span class="keyword">else</span>:
+                <span class="keyword">break</span>
+
+        in_sync_token = False
+        <span class="keyword">for</span> s <span class="keyword">in</span> sync_list:
+            s_is_type = s <span class="keyword">in</span> [<span class="string">"идентификатор"</span>, <span class="string">"константа"</span>, <span class="string">"Выражение"</span>, <span class="string">"параметр"</span>] <span class="keyword">or</span> s.startswith(<span class="string">"Тип данных"</span>)
+            <span class="keyword">if</span> self.check_match(token, s, s_is_type):
+                in_sync_token = True
+                <span class="keyword">break</span>
+
+        <span class="keyword">if</span> len(skipped_tokens) == 1 <span class="keyword">and</span> in_sync_token:
+            self.pos -= 1
+            bad_fragment = token.lexeme
+        <span class="keyword">else</span>:
+            bad_fragment = <span class="string">""</span>.join(t.lexeme <span class="keyword">for</span> t <span class="keyword">in</span> skipped_tokens)
+
+        err_token = type(token)(token.code, token.type_name, bad_fragment,
+                                skipped_tokens[0].line, skipped_tokens[0].start,
+                                skipped_tokens[-1].end)
+
+        self.add_error(err_token, expected)
+
+        curr = self.current_token()
+        <span class="keyword">if</span> curr <span class="keyword">and</span> self.check_match(curr, expected, is_type):
+            self.advance()
+            self.panic_mode = False
+
+        <span class="keyword">return</span> True
+
+    <span class="keyword">def</span> <span class="def">parse</span>(self):
+        <span class="keyword">if</span> <span class="keyword">not</span> self.tokens:
+            <span class="keyword">return</span> self.errors
+
+        <span class="keyword">while</span> self.pos < len(self.tokens):
+            <span class="keyword">try</span>:
+                self.parse_statement()
+            <span class="keyword">except</span> StopParsing:
+                <span class="keyword">while</span> self.pos < len(self.tokens) <span class="keyword">and</span> self.current_token().lexeme != <span class="string">"let"</span>:
+                    self.advance()
+                self.panic_mode = False
+
+        <span class="keyword">return</span> self.errors
+
+    <span class="keyword">def</span> <span class="def">parse_statement</span>(self):
+        self.match(<span class="string">"let"</span>, sync_tokens=[<span class="string">"идентификатор"</span>])
+        self.match(<span class="string">"идентификатор"</span>, is_type=True, sync_tokens=[<span class="string">"="</span>])
+        self.match(<span class="string">"="</span>, sync_tokens=[<span class="string">"{"</span>])
+        self.match(<span class="string">"{"</span>, sync_tokens=[<span class="string">"("</span>])
+        self.parse_lambda_body()
+        self.match(<span class="string">"}"</span>, sync_tokens=[<span class="string">";"</span>])
+        self.match(<span class="string">";"</span>, sync_tokens=[<span class="string">"let"</span>])
+
+    <span class="keyword">def</span> <span class="def">parse_lambda_body</span>(self):
+        self.match(<span class="string">"("</span>, sync_tokens=[<span class="string">"идентификатор"</span>, <span class="string">")"</span>])
+
+        curr = self.current_token()
+        <span class="keyword">if</span> curr <span class="keyword">and</span> curr.lexeme != <span class="string">")"</span>:
+            self.parse_params()
+
+        self.match(<span class="string">")"</span>, sync_tokens=[<span class="string">"->"</span>])
+        self.match(<span class="string">"->"</span>, sync_tokens=[<span class="string">"Тип данных (Int, String, Float, Bool)"</span>])
+        self.parse_type()
+        self.match(<span class="string">"in"</span>, sync_tokens=[<span class="string">"return"</span>])
+        self.match(<span class="string">"return"</span>, sync_tokens=[<span class="string">"идентификатор"</span>, <span class="string">"константа"</span>, <span class="string">"("</span>, <span class="string">"Выражение"</span>])
+        self.parse_expr()
+
+    <span class="keyword">def</span> <span class="def">parse_params</span>(self):
+        <span class="keyword">while</span> self.current_token():
+            token = self.current_token()
+            <span class="keyword">if</span> token.lexeme == <span class="string">")"</span>:
+                <span class="keyword">break</span>
+
+            self.parse_param()
+
+            token = self.current_token()
+            <span class="keyword">if</span> <span class="keyword">not</span> token <span class="keyword">or</span> token.lexeme <span class="keyword">in</span> [<span class="string">"->"</span>, <span class="string">")"</span>]:
+                <span class="keyword">break</span>
+
+            <span class="keyword">if</span> token.lexeme == <span class="string">","</span>:
+                comma_token = token
+                self.match(<span class="string">","</span>, sync_tokens=[<span class="string">"идентификатор"</span>, <span class="string">")"</span>])
+
+                <span class="keyword">if</span> self.current_token() <span class="keyword">and</span> self.current_token().lexeme == <span class="string">","</span>:
+                    err_tokens = []
+                    <span class="keyword">while</span> self.current_token() <span class="keyword">and</span> self.current_token().lexeme == <span class="string">","</span>:
+                        err_tokens.append(self.current_token())
+                        self.advance()
+
+                    bad_fragment = <span class="string">""</span>.join(t.lexeme <span class="keyword">for</span> t <span class="keyword">in</span> err_tokens)
+                    err_token = type(token)(token.code, token.type_name, bad_fragment,
+                                            err_tokens[0].line, err_tokens[0].start,
+                                            err_tokens[-1].end)
+                    self.add_error(err_token, <span class="string">"идентификатор"</span>, f<span class="string">"Лишние символы: '{bad_fragment}'"</span>)
+
+                <span class="keyword">if</span> self.current_token() <span class="keyword">and</span> self.current_token().lexeme == <span class="string">")"</span>:
+                    self.add_error(comma_token, <span class="string">"параметр"</span>, <span class="string">"Ожидался параметр после запятой"</span>)
+                    <span class="keyword">break</span>
+            <span class="keyword">else</span>:
+                <span class="keyword">if</span> <span class="keyword">not</span> self.panic_mode:
+                    self.add_error(token, <span class="string">","</span>)
+                    self.panic_mode = True
+
+                <span class="keyword">if</span> token.type_name != <span class="string">"идентификатор"</span> <span class="keyword">and</span> token.lexeme <span class="keyword">not</span> <span class="keyword">in</span> [<span class="string">")"</span>, <span class="string">"->"</span>]:
+                    self.advance()
+
+    <span class="keyword">def</span> <span class="def">parse_param</span>(self):
+        self.match(<span class="string">"идентификатор"</span>, is_type=True, sync_tokens=[<span class="string">":"</span>])
+        self.match(<span class="string">":"</span>, sync_tokens=[<span class="string">"Тип данных (Int, String, Float, Bool)"</span>])
+        self.parse_type()
+
+    <span class="keyword">def</span> <span class="def">parse_type</span>(self):
+        self.match(<span class="string">"Тип данных (Int, String, Float, Bool)"</span>, sync_tokens=[<span class="string">","</span>, <span class="string">")"</span>, <span class="string">"in"</span>, <span class="string">"->"</span>])
+
+    <span class="keyword">def</span> <span class="def">parse_expr</span>(self):
+        self.parse_term()
+        <span class="keyword">while</span> self.current_token():
+            curr = self.current_token()
+            <span class="keyword">if</span> curr.lexeme <span class="keyword">in</span> [<span class="string">"+"</span>, <span class="string">"-"</span>]:
+                self.match(curr.lexeme)
+                self.parse_term()
+            <span class="keyword">elif</span> curr.lexeme <span class="keyword">in</span> [<span class="string">"*"</span>, <span class="string">"/"</span>, <span class="string">"%"</span>, <span class="string">")"</span>, <span class="string">"}"</span>, <span class="string">";"</span>, <span class="string">","</span>, <span class="string">"in"</span>, <span class="string">"return"</span>, <span class="string">"->"</span>, <span class="string">"="</span>, <span class="string">"{"</span>, <span class="string">":"</span>]:
+                <span class="keyword">break</span>
+            <span class="keyword">else</span>:
+                err_tokens = [curr]
+                self.advance()
+                <span class="keyword">while</span> self.current_token():
+                    next_tok = self.current_token()
+                    last_tok = err_tokens[-1]
+                    is_touching = (next_tok.line == last_tok.line <span class="keyword">and</span> next_tok.start <= last_tok.end + 1)
+                    is_same = (next_tok.lexeme == last_tok.lexeme)
+                    <span class="keyword">if</span> is_touching <span class="keyword">or</span> is_same:
+                        err_tokens.append(next_tok)
+                        self.advance()
+                    <span class="keyword">else</span>:
+                        <span class="keyword">break</span>
+                bad_fragment = <span class="string">""</span>.join(t.lexeme <span class="keyword">for</span> t <span class="keyword">in</span> err_tokens)
+                err_token = type(err_tokens[0])(err_tokens[0].code, err_tokens[0].type_name, bad_fragment,
+                                                err_tokens[0].line, err_tokens[0].start,
+                                                err_tokens[-1].end)
+                self.add_error(err_token, <span class="string">"Выражение"</span>, f<span class="string">"Неожиданный символ в выражении: '{bad_fragment}'"</span>)
+
+    <span class="keyword">def</span> <span class="def">parse_term</span>(self):
+        self.parse_factor()
+        <span class="keyword">while</span> self.current_token():
+            curr = self.current_token()
+            <span class="keyword">if</span> curr.lexeme <span class="keyword">in</span> [<span class="string">"*"</span>, <span class="string">"/"</span>, <span class="string">"%"</span>]:
+                self.match(curr.lexeme)
+                self.parse_factor()
+            <span class="keyword">elif</span> curr.lexeme <span class="keyword">in</span> [<span class="string">"+"</span>, <span class="string">"-"</span>, <span class="string">")"</span>, <span class="string">"}"</span>, <span class="string">";"</span>, <span class="string">","</span>, <span class="string">"in"</span>, <span class="string">"return"</span>, <span class="string">"->"</span>, <span class="string">"="</span>, <span class="string">"{"</span>, <span class="string">":"</span>]:
+                <span class="keyword">break</span>
+            <span class="keyword">else</span>:
+                err_tokens = [curr]
+                self.advance()
+                <span class="keyword">while</span> self.current_token():
+                    next_tok = self.current_token()
+                    last_tok = err_tokens[-1]
+                    is_touching = (next_tok.line == last_tok.line <span class="keyword">and</span> next_tok.start <= last_tok.end + 1)
+                    is_same = (next_tok.lexeme == last_tok.lexeme)
+                    <span class="keyword">if</span> is_touching <span class="keyword">or</span> is_same:
+                        err_tokens.append(next_tok)
+                        self.advance()
+                    <span class="keyword">else</span>:
+                        <span class="keyword">break</span>
+                bad_fragment = <span class="string">""</span>.join(t.lexeme <span class="keyword">for</span> t <span class="keyword">in</span> err_tokens)
+                err_token = type(err_tokens[0])(err_tokens[0].code, err_tokens[0].type_name, bad_fragment,
+                                                err_tokens[0].line, err_tokens[0].start,
+                                                err_tokens[-1].end)
+                self.add_error(err_token, <span class="string">"Выражение"</span>, f<span class="string">"Неожиданный символ в выражении: '{bad_fragment}'"</span>)
+
+    <span class="keyword">def</span> <span class="def">parse_factor</span>(self):
+        token = self.current_token()
+        <span class="keyword">if</span> <span class="keyword">not</span> token:
+            self.add_error(None, <span class="string">"Выражение"</span>)
+            <span class="keyword">return</span>
+
+        <span class="keyword">if</span> token.type_name == <span class="string">"идентификатор"</span>:
+            self.match(<span class="string">"идентификатор"</span>, is_type=True, sync_tokens=[<span class="string">"+"</span>, <span class="string">"-"</span>, <span class="string">"*"</span>, <span class="string">"/"</span>, <span class="string">"%"</span>, <span class="string">"}"</span>, <span class="string">")"</span>, <span class="string">";"</span>, <span class="string">","</span>])
+        <span class="keyword">elif</span> token.type_name == <span class="string">"константа"</span>:
+            self.match(<span class="string">"константа"</span>, is_type=True, sync_tokens=[<span class="string">"+"</span>, <span class="string">"-"</span>, <span class="string">"*"</span>, <span class="string">"/"</span>, <span class="string">"%"</span>, <span class="string">"}"</span>, <span class="string">")"</span>, <span class="string">";"</span>, <span class="string">","</span>])
+        <span class="keyword">elif</span> token.lexeme == <span class="string">"("</span>:
+            self.match(<span class="string">"("</span>, sync_tokens=[<span class="string">"идентификатор"</span>, <span class="string">"константа"</span>, <span class="string">"Выражение"</span>])
+            self.parse_expr()
+            self.match(<span class="string">")"</span>, sync_tokens=[<span class="string">"+"</span>, <span class="string">"-"</span>, <span class="string">"*"</span>, <span class="string">"/"</span>, <span class="string">"%"</span>, <span class="string">"}"</span>, <span class="string">";"</span>, <span class="string">","</span>])
+        <span class="keyword">else</span>:
+            err_tokens = [token]
+            self.advance()
+            <span class="keyword">while</span> self.current_token():
+                next_tok = self.current_token()
+                last_tok = err_tokens[-1]
+                is_touching = (next_tok.line == last_tok.line <span class="keyword">and</span> next_tok.start <= last_tok.end + 1)
+                is_same = (next_tok.lexeme == last_tok.lexeme)
+
+                <span class="keyword">if</span> is_touching <span class="keyword">or</span> is_same:
+                    err_tokens.append(next_tok)
+                    self.advance()
+                <span class="keyword">else</span>:
+                    <span class="keyword">break</span>
+
+            bad_fragment = <span class="string">""</span>.join(t.lexeme <span class="keyword">for</span> t <span class="keyword">in</span> err_tokens)
+            err_token = type(err_tokens[0])(err_tokens[0].code, err_tokens[0].type_name, bad_fragment,
+                                            err_tokens[0].line, err_tokens[0].start,
+                                            err_tokens[-1].end)
+
+            self.add_error(err_token, <span class="string">"Выражение"</span>, f<span class="string">"Ожидалось 'Выражение', получено '{bad_fragment}'"</span>)
+
+            curr = self.current_token()
+            <span class="keyword">if</span> curr <span class="keyword">and</span> (curr.type_name <span class="keyword">in</span> [<span class="string">"идентификатор"</span>, <span class="string">"константа"</span>] <span class="keyword">or</span> curr.lexeme == <span class="string">"("</span>):
+                self.parse_factor()</code></pre>
             </td>
         </tr>
     </tbody>
