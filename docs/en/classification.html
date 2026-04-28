@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: sans-serif;
+            line-height: 1.6;
+            color: #000000;
+            padding: 20px;
+            background-color: #ffffff;
+        }
+        h2 {
+            color: #2e7d32;
+            border-bottom: 2px solid #2e7d32;
+            padding-bottom: 5px;
+        }
+        .math {
+            font-family: "Times New Roman", serif;
+            font-style: italic;
+            font-size: 1.1em;
+            margin: 10px 0;
+            display: block;
+        }
+        ul {
+            padding-left: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h2>Grammar Classification</h2>
+
+    <p>According to Chomsky's classification, the resulting generative grammar <b>G[&lt;START&gt;]</b> corresponds to the <b>type of context-free grammars</b>.</p>
+
+    <p>This is justified by the fact that all production (reduction) rules correspond to the following form:</p>
+    <span class="math">A &rarr; &alpha;</span>
+    <p>where:</p>
+    <ul>
+        <li><b>A</b> &mdash; strictly one non-terminal symbol from the vocabulary V<sub>N</sub>;</li>
+        <li><b>&alpha;</b> &mdash; any string consisting of terminal and non-terminal symbols of the combined vocabulary.</li>
+    </ul>
+
+    <p><b>Additional characteristics:</b></p>
+    <p>The grammar is also <b>unambiguous</b> and <b>deterministic</b>, which allows it to be implemented using the recursive descent method without the need for backtracking.</p>
+</body>
+</html>

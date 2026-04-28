@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: sans-serif;
+            line-height: 1.6;
+            color: #000000; /* Pure black text color */
+            padding: 20px;
+            background-color: #ffffff;
+        }
+        h2 {
+            color: #2e7d32; /* Keeping the green header for style consistency */
+            border-bottom: 2px solid #2e7d32;
+            padding-bottom: 5px;
+        }
+        .section-box {
+            padding: 10px 0;
+            margin: 15px 0;
+        }
+        ul, ol {
+            padding-left: 20px;
+        }
+        code {
+            font-weight: bold;
+            color: #000000;
+        }
+        .format-line {
+            font-family: monospace;
+            display: block;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h2>Problem Statement</h2>
+
+    <p>Option 87: Lambda expression in the Swift language.</p>
+
+    <p>The goal of this work is the design and programmatic implementation of a syntax analyzer (parser) to verify the correctness of a code fragment representing a Swift lambda expression.</p>
+
+    <p><b>Main Requirements:</b></p>
+    <ul>
+        <li>Development of a context-free grammar for the Lambda expression.</li>
+        <li>Implementation of the recursive descent method for analyzing the input string of symbols.</li>
+        <li>Providing diagnostics and neutralization of syntax errors using the Irons method.</li>
+    </ul>
+
+    <p><b>Expression Format</b></p>
+    <p>In accordance with the grammar, a correct expression must have the following form:</p>
+    <span class="format-line">let variable_name = { (parameter: type) -> return_type in return expression };</span>
+
+    <p><b>Examples of correct strings for verification:</b></p>
+    <ul>
+        <li>let calc = { (a: Int, b: Int) -> Int in return a + b };</li>
+        <li>let simple = { (s: String) -> String in return s };</li>
+    </ul>
+</body>
+</html>

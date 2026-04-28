@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: sans-serif;
+            line-height: 1.6;
+            color: #000000;
+            padding: 20px;
+            background-color: #ffffff;
+        }
+        h2 {
+            color: #2e7d32;
+            border-bottom: 2px solid #2e7d32;
+            padding-bottom: 5px;
+        }
+        pre {
+            font-family: "Courier New", monospace;
+            font-size: 14px;
+            margin-left: 20px;
+        }
+        .bold {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h2>Grammar Development</h2>
+
+    <p>The grammar for a Swift language lambda expression G[&lt;START&gt;] in Chomsky notation with productions P:</p>
+
+    <pre>
+1.  &lt;START&gt;        -> ‘LET’ &lt;LET&gt;
+2.  &lt;LET&gt;          -> ‘ ’ &lt;SPACE_1&gt;
+3.  &lt;SPACE_1&gt;      -> &lt;IDENTIFIER&gt; &lt;VAR_NAME&gt;
+4.  &lt;VAR_NAME&gt;     -> ‘=’ &lt;ASSIGN&gt;
+5.  &lt;ASSIGN&gt;       -> ‘{’ &lt;LBRACE&gt;
+6.  &lt;LBRACE&gt;       -> ‘(’ &lt;LPAREN&gt;
+7.  &lt;LPAREN&gt;       -> &lt;PARAM&gt; &lt;PARAM_LIST&gt;
+8.  &lt;PARAM&gt;        -> &lt;IDENTIFIER&gt; ‘:’ &lt;TYPE&gt;
+9.  &lt;TYPE&gt;         -> ‘Int’ | ‘String’ | ‘Float’ | ‘Bool’
+10. &lt;PARAM_LIST&gt;   -> ‘,’ &lt;LPAREN&gt; | ‘)’ &lt;RPAREN&gt;
+11. &lt;RPAREN&gt;       -> ‘->’ &lt;ARROW&gt;
+12. &lt;ARROW&gt;        -> &lt;TYPE&gt; &lt;RETURN_TYPE&gt;
+13. &lt;RETURN_TYPE&gt;  -> ‘ ’ &lt;SPACE_2&gt;
+14. &lt;SPACE_2&gt;      -> ‘in’ &lt;IN&gt;
+15. &lt;IN&gt;           -> ‘ ’ &lt;SPACE_3&gt;
+16. &lt;SPACE_3&gt;      -> ‘return’ &lt;RETURN&gt;
+17. &lt;RETURN&gt;       -> ‘ ’ &lt;SPACE_4&gt;
+18. &lt;SPACE_4&gt;      -> &lt;EXPR&gt; &lt;CLOSE&gt;
+19. &lt;EXPR&gt;         -> &lt;TERM&gt; &lt;EXPR_TAIL&gt;
+20. &lt;EXPR_TAIL&gt;    -> ‘+’ &lt;TERM&gt; &lt;EXPR_TAIL&gt; | ‘-’ &lt;TERM&gt; &lt;EXPR_TAIL&gt; | ε
+21. &lt;TERM&gt;         -> &lt;FACTOR&gt; &lt;TERM_TAIL&gt;
+22. &lt;TERM_TAIL&gt;    -> ‘*’ &lt;FACTOR&gt; &lt;TERM_TAIL&gt; | ‘/’ &lt;FACTOR&gt; &lt;TERM_TAIL&gt; | ε
+23. &lt;FACTOR&gt;       -> &lt;IDENTIFIER&gt; | &lt;NUMBER&gt; | (&lt;EXPR&gt;)
+24. &lt;CLOSE&gt;        -> ‘}’ &lt;END&gt;
+25. &lt;END&gt;          -> ‘;’
+26. &lt;IDENTIFIER&gt;   -> letter &lt;ID_TAIL&gt;
+27. &lt;ID_TAIL&gt;      -> letter &lt;ID_TAIL&gt; | digit &lt;ID_TAIL&gt; | ε
+28. &lt;NUMBER&gt;       -> digit &lt;NUM_TAIL&gt;
+29. &lt;NUM_TAIL&gt;     -> digit &lt;NUM_TAIL&gt; | ε
+    </pre>
+
+    <p><span class="bold">Grammar Components:</span></p>
+    <ul>
+        <li><span class="bold">V_T (Terminal symbols):</span> {'let', '=', '{', '(', ')', ':', ',', '->', 'in', 'return', '+', '-', '*', '/', ';', 'Int', 'String', 'Float', 'Bool', letter, digit}.</li>
+        <li><span class="bold">V_N (Non-terminal symbols):</span> {START, LET, SPACE_1, VAR_NAME, ASSIGN, LBRACE, LPAREN, PARAM, TYPE, PARAM_LIST, RPAREN, ARROW, RETURN_TYPE, SPACE_2, IN, SPACE_3, RETURN, SPACE_4, EXPR, EXPR_TAIL, TERM, TERM_TAIL, FACTOR, CLOSE, END, IDENTIFIER, ID_TAIL, NUMBER, NUM_TAIL}.</li>
+        <li><span class="bold">Z (Target symbol):</span> &lt;START&gt;.</li>
+    </ul>
+</body>
+</html>

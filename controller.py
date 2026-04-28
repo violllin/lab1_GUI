@@ -1,4 +1,5 @@
 import os
+import webbrowser
 from PyQt6.QtWidgets import QFileDialog, QMessageBox, QTableWidgetItem
 from PyQt6.QtCore import Qt
 from help_window import HelpWindow
@@ -172,21 +173,28 @@ class EditorController:
         QMessageBox.about(self.ui, title, msg)
 
     def show_document(self, doc_type):
-        docs_map = {
-            "task": ("Постановка задачи", "docs/task.html"),
-            "grammar": ("Грамматика", "docs/grammar.html"),
-            "classification": ("Классификация грамматики", "docs/classification.html"),
-            "method": ("Метод анализа", "docs/method.html"),
-            "test_case": ("Тестовый пример", "docs/test_case.html"),
-            "references": ("Список литературы", "docs/references.html"),
-            "source_code": ("Исходный код программы", "docs/source_code.html"),
-            "help": ("Справка", "docs/help.html"),
+        docs_filenames = {
+            "task": "task.html",
+            "grammar": "grammar.html",
+            "classification": "classification.html",
+            "method": "method.html",
+            "test_case": "test_case.html",
+            "references": "references.html",
+            "source_code": "source_code.html",
+            "help": "help.html",
         }
+        if doc_type in docs_filenames:
+            filename = docs_filenames[doc_type]
+            current_lang = self.ui.current_lang
 
-        if doc_type in docs_map:
-            title, path = docs_map[doc_type]
-            win = DocWindow(title, path, self.ui)
-            win.exec()
+            rel_path = os.path.join("docs", current_lang, filename)
+            abs_path = os.path.abspath(rel_path)
+
+            if os.path.exists(abs_path):
+                webbrowser.open(f"file://{abs_path}")
+            else:
+                msg = "File not found" if current_lang == "en" else "Файл не найден"
+                QMessageBox.warning(self.ui, "Error" if current_lang == "en" else "Ошибка", f"{msg}: {rel_path}")
 
     def show_help(self):
         self.help_window = HelpWindow(self.ui, self.lang)
