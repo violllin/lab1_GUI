@@ -73,17 +73,6 @@ class Parser:
                 if self.check_match(curr, expected, is_type):
                     break
 
-                in_sync = False
-                for s in sync_list:
-                    s_is_type = s in ["идентификатор", "константа", "Выражение", "параметр"] or s.startswith(
-                        "Тип данных")
-                    if self.check_match(curr, s, s_is_type):
-                        in_sync = True
-                        break
-
-                if in_sync and not is_same:
-                    break
-
                 skipped_tokens.append(curr)
                 self.advance()
             else:
@@ -217,9 +206,6 @@ class Parser:
                     is_touching = (next_tok.line == last_tok.line and next_tok.start <= last_tok.end + 1)
                     is_same = (next_tok.lexeme == last_tok.lexeme)
                     if is_touching or is_same:
-                        if next_tok.lexeme in ["+", "-", "*", "/", "%", ")", "}", ";", ",", "in", "return", "->", "=",
-                                               "{", ":"] and not is_same:
-                            break
                         err_tokens.append(next_tok)
                         self.advance()
                     else:
@@ -248,9 +234,6 @@ class Parser:
                     is_touching = (next_tok.line == last_tok.line and next_tok.start <= last_tok.end + 1)
                     is_same = (next_tok.lexeme == last_tok.lexeme)
                     if is_touching or is_same:
-                        if next_tok.lexeme in ["+", "-", "*", "/", "%", ")", "}", ";", ",", "in", "return", "->", "=",
-                                               "{", ":"] and not is_same:
-                            break
                         err_tokens.append(next_tok)
                         self.advance()
                     else:
@@ -285,10 +268,6 @@ class Parser:
                 is_same = (next_tok.lexeme == last_tok.lexeme)
 
                 if is_touching or is_same:
-                    if (next_tok.lexeme in ["+", "-", "*", "/", "%", ")", "}", ";", ",", "in", "return", "->", "=", "{",
-                                            ":", "("] or next_tok.type_name in ["идентификатор",
-                                                                                "константа"]) and not is_same:
-                        break
                     err_tokens.append(next_tok)
                     self.advance()
                 else:
