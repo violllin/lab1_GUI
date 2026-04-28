@@ -253,4 +253,30 @@ class Parser:
             self.parse_expr()
             self.match(")", sync_tokens=["+", "-", "*", "/", "%", "}", ";", ","])
         else:
-            self.match("Выражение", sync_tokens=["+", "-", "*", "/", "%", "}", ")", ";", ","])
+            err_tokens = [token]
+            self.advance()
+            while self.current_token():
+                next_tok = self.current_token()
+                last_tok = err_tokens[-1]
+                is_touching = (next_tok.line == last_tok.line and next_tok.start <= last_tok.end + 1)
+                is_same = (next_tok.lexeme == last_tok.lexeme)
+
+                if is_touching or is_same:
+                    if next_tok.lexeme == "(" or next_tok.type_name in ["идентификатор", "константа"]:
+                        if not is_same:
+                            break
+                    err_tokens.append(next_tok)
+                    self.advance()
+                else:
+                    break
+
+            bad_fragment = "".join(t.lexeme for t in err_tokens)
+            err_token = type(err_tokens[0])(err_tokens[0].code, err_tokens[0].type_name, bad_fragment,
+                                            err_tokens[0].line, err_tokens[0].start,
+                                            err_tokens[-1].end)
+
+            self.add_error(err_token, "Выражение", f"Ожидалось 'Выражение', получено '{bad_fragment}'")
+
+            curr = self.current_token()
+            if curr and (curr.type_name in ["идентификатор", "константа"] or curr.lexeme == "("):
+                self.parse_factor()
