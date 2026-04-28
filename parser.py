@@ -72,12 +72,31 @@ class Parser:
             if is_touching or is_same:
                 if self.check_match(curr, expected, is_type):
                     break
+
+                in_sync = False
+                for s in sync_list:
+                    s_is_type = s in ["идентификатор", "константа", "Выражение", "параметр"] or s.startswith(
+                        "Тип данных")
+                    if self.check_match(curr, s, s_is_type):
+                        in_sync = True
+                        break
+
+                if in_sync and not is_same:
+                    break
+
                 skipped_tokens.append(curr)
                 self.advance()
             else:
                 break
 
-        if len(skipped_tokens) == 1 and (token.lexeme in sync_list or token.type_name in sync_list):
+        in_sync_token = False
+        for s in sync_list:
+            s_is_type = s in ["идентификатор", "константа", "Выражение", "параметр"] or s.startswith("Тип данных")
+            if self.check_match(token, s, s_is_type):
+                in_sync_token = True
+                break
+
+        if len(skipped_tokens) == 1 and in_sync_token:
             self.pos -= 1
             bad_fragment = token.lexeme
         else:
@@ -168,7 +187,9 @@ class Parser:
                 if not self.panic_mode:
                     self.add_error(token, ",")
                     self.panic_mode = True
-                self.advance()
+
+                if token.type_name != "идентификатор" and token.lexeme not in [")", "->"]:
+                    self.advance()
 
     def parse_param(self):
         self.match("идентификатор", is_type=True, sync_tokens=[":"])
@@ -196,7 +217,8 @@ class Parser:
                     is_touching = (next_tok.line == last_tok.line and next_tok.start <= last_tok.end + 1)
                     is_same = (next_tok.lexeme == last_tok.lexeme)
                     if is_touching or is_same:
-                        if next_tok.lexeme in ["+", "-", "*", "/", "%", ")", "}", ";", ",", "in", "return", "->", "=", "{", ":"] and not is_touching:
+                        if next_tok.lexeme in ["+", "-", "*", "/", "%", ")", "}", ";", ",", "in", "return", "->", "=",
+                                               "{", ":"] and not is_same:
                             break
                         err_tokens.append(next_tok)
                         self.advance()
@@ -226,7 +248,8 @@ class Parser:
                     is_touching = (next_tok.line == last_tok.line and next_tok.start <= last_tok.end + 1)
                     is_same = (next_tok.lexeme == last_tok.lexeme)
                     if is_touching or is_same:
-                        if next_tok.lexeme in ["+", "-", "*", "/", "%", ")", "}", ";", ",", "in", "return", "->", "=", "{", ":"] and not is_touching:
+                        if next_tok.lexeme in ["+", "-", "*", "/", "%", ")", "}", ";", ",", "in", "return", "->", "=",
+                                               "{", ":"] and not is_same:
                             break
                         err_tokens.append(next_tok)
                         self.advance()
@@ -262,9 +285,10 @@ class Parser:
                 is_same = (next_tok.lexeme == last_tok.lexeme)
 
                 if is_touching or is_same:
-                    if next_tok.lexeme == "(" or next_tok.type_name in ["идентификатор", "константа"]:
-                        if not is_same:
-                            break
+                    if (next_tok.lexeme in ["+", "-", "*", "/", "%", ")", "}", ";", ",", "in", "return", "->", "=", "{",
+                                            ":", "("] or next_tok.type_name in ["идентификатор",
+                                                                                "константа"]) and not is_same:
+                        break
                     err_tokens.append(next_tok)
                     self.advance()
                 else:
