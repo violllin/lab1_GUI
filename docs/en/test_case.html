@@ -2,9 +2,106 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            line-height: 1.6;
+            color: #000000;
+            padding: 20px;
+            background-color: #ffffff;
+        }
+        h2 {
+            color: #2e7d32;
+            border-bottom: 2px solid #2e7d32;
+            padding-bottom: 5px;
+        }
+        .test-case {
+            margin-bottom: 40px;
+            border: 1px solid #eee;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        .case-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        .code-block {
+            background-color: #f5f5f5;
+            padding: 10px;
+            font-family: monospace;
+            border-left: 4px solid #2e7d32;
+            margin-bottom: 15px;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        .description {
+            font-style: italic;
+            color: #666;
+            margin-top: 10px;
+            text-align: center;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 10px auto;
+            border: 1px solid #ddd;
+        }
+    </style>
 </head>
 <body>
+    <h2>Parser Syntax Analysis Testing</h2>
+
+    <p>Below are the testing results of the developed parser for Swift lambda expressions using both correct and erroneous data.</p>
+
+    <div class="test-case">
+        <div class="case-title">1. Test Case 1 (Correct Expression)</div>
+        <div class="code-block">let calc = { (a: Int, b: Int, c: Int) -> Int in return a + (b * c) };</div>
+        <p>Result: Analysis completed successfully, no errors found.</p>
+        <img src="../../images/task_html/example1_en.png">
+        <p class="description">Fig. 1 — Test Case 1</p>
+    </div>
+
+    <div class="test-case">
+        <div class="case-title">2. Test Case 2 (Correct Expression)</div>
+        <div class="code-block">let simple = { (s: String) -> String in return s };</div>
+        <p>Result: Analysis completed successfully, no errors found.</p>
+        <img src="../../images/task_html/example2_en.png">
+        <p class="description">Fig. 2 — Test Case 2</p>
+    </div>
+
+    <div class="test-case">
+        <div class="case-title">3. Test Case 3 (Errors in Types and Punctuation)</div>
+        <div class="code-block">let calc = { (a: I%nt, b:::: Int c: Int,,,,) -> Int in return a + (b * c) };</div>
+        <p>Result: Errors in type declarations and redundant punctuation marks were detected and neutralized.</p>
+        <img src="../../images/task_html/example3_en.png">
+        <p class="description">Fig. 3 — Test Case 3</p>
+    </div>
+
+    <div class="test-case">
+        <div class="case-title">4. Test Case 4 (Multiple Syntax Errors)</div>
+        <div class="code-block">!!let calc = { (: Int, b: Int c: Int,,) -@> Int in @@ return a + (b * c)};;;</div>
+        <p>Result: Errors identified in keywords, missing identifiers, and incorrect operators.</p>
+        <img src="../../images/task_html/example4_en.png">
+        <p class="description">Fig. 4 — Test Case 4</p>
+    </div>
+
+    <div class="test-case">
+        <div class="case-title">5. Test Case 5 (Errors in Identifiers and Operators)</div>
+        <div class="code-block">?let c^alc = { (a: Int, b: Int, c: Int) -?> Int i+n return a + (b * c) };</div>
+        <p>Result: Neutralization of errors in variable names and reserved keywords (in).</p>
+        <img src="../../images/task_html/example5_en.png">
+        <p class="description">Fig. 5 — Test Case 5</p>
+    </div>
+
+    <div class="test-case">
+        <div class="case-title">6. Test Case 6 (Use of Special Characters)</div>
+        <div class="code-block">let @ calc = @ { (a: Int, b: @ Int, c: Int) -@> Int in @ return @ a + (b * c)}; @</div>
+        <p>Result: Diagnostics of redundant '@' characters in various parts of the expression.</p>
+        <img src="../../images/task_html/example6_en.png">
+        <p class="description">Fig. 6 — Test Case 6</p>
+    </div>
 
 </body>
 </html>

@@ -1,10 +1,185 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #ffffff;
+            color: #333;
+            padding: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            border: 1px solid #ddd;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        th {
+            background-color: #f8f9fa;
+            padding: 12px;
+            text-align: left;
+            border-bottom: 2px solid #dee2e6;
+            font-size: 1.1em;
+            color: #2e7d32;
+        }
+        td {
+            padding: 0;
+            background-color: #fafafa;
+        }
+        pre {
+            margin: 0;
+            padding: 20px;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        /* Базовая подсветка для Python */
+        .keyword { color: #0033cc; font-weight: bold; }
+        .string { color: #008000; }
+        .comment { color: #666666; font-style: italic; }
+        .def { color: #9900cc; font-weight: bold; }
+        .class { color: #ff6600; font-weight: bold; }
+    </style>
 </head>
 <body>
+
+<table>
+    <thead>
+        <tr>
+            <th>Файл: scanner.py</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+<pre><code><span class="keyword">class</span> <span class="class">Token</span>:
+    <span class="keyword">def</span> <span class="def">__init__</span>(self, code, type_name, lexeme, line, start, end, is_error=False):
+        self.code = code
+        self.type_name = type_name
+        self.lexeme = lexeme
+        self.line = line
+        self.start = start
+        self.end = end
+        self.is_error = is_error
+
+
+<span class="keyword">class</span> <span class="class">Scanner</span>:
+    <span class="keyword">def</span> <span class="def">__init__</span>(self):
+        self.keywords = {
+            <span class="string">"Int"</span>: (1, <span class="string">"ключевое слово"</span>),
+            <span class="string">"String"</span>: (2, <span class="string">"ключевое слово"</span>),
+            <span class="string">"return"</span>: (3, <span class="string">"ключевое слово"</span>),
+            <span class="string">"let"</span>: (4, <span class="string">"ключевое слово"</span>),
+            <span class="string">"in"</span>: (5, <span class="string">"ключевое слово"</span>),
+            <span class="string">"Bool"</span>: (7, <span class="string">"ключевое слово"</span>),
+            <span class="string">"Float"</span>: (8, <span class="string">"ключевое слово"</span>)
+        }
+
+        self.single_chars = {
+            ':': (11, <span class="string">"разделитель"</span>),
+            '+': (12, <span class="string">"оператор"</span>),
+            '*': (13, <span class="string">"оператор"</span>),
+            '=': (15, <span class="string">"оператор"</span>),
+            '(': (16, <span class="string">"разделитель"</span>),
+            ')': (17, <span class="string">"разделитель"</span>),
+            ',': (18, <span class="string">"разделитель"</span>),
+            '{': (19, <span class="string">"разделитель"</span>),
+            '}': (20, <span class="string">"разделитель"</span>),
+            ';': (21, <span class="string">"разделитель"</span>),
+            '%': (23, <span class="string">"оператор"</span>),
+            '/': (24, <span class="string">"оператор"</span>)
+        }
+
+    <span class="keyword">def</span> <span class="def">analyze</span>(self, text):
+        tokens = []
+        i = 0
+        line = 1
+        col = 1
+
+        while i < len(text):
+            char = text[i]
+
+            if char in '\t\n\r':
+                if char == '\n':
+                    line += 1
+                    col = 1
+                else:
+                    col += 1
+                i += 1
+                continue
+
+            start_col = col
+
+            if char == ' ':
+                tokens.append(Token(14, <span class="string">"разделитель"</span>, <span class="string">"space"</span>, line, start_col, col))
+                i += 1
+                col += 1
+                continue
+
+            if char.isalpha():
+                lexeme = char
+                i += 1
+                col += 1
+                while i < len(text) and text[i].isalnum():
+                    lexeme += text[i]
+                    i += 1
+                    col += 1
+
+                if lexeme in self.keywords:
+                    code, type_name = self.keywords[lexeme]
+                    tokens.append(Token(code, type_name, lexeme, line, start_col, col - 1))
+                else:
+                    tokens.append(Token(6, <span class="string">"идентификатор"</span>, lexeme, line, start_col, col - 1))
+                continue
+
+            if char.isdigit():
+                lexeme = char
+                i += 1
+                col += 1
+                while i < len(text) and text[i].isdigit():
+                    lexeme += text[i]
+                    i += 1
+                    col += 1
+                tokens.append(Token(22, <span class="string">"константа"</span>, lexeme, line, start_col, col - 1))
+                continue
+
+            if char == '-':
+                if i + 1 < len(text) and text[i + 1] == '>':
+                    tokens.append(Token(10, <span class="string">"оператор"</span>, <span class="string">"->"</span>, line, start_col, col + 1))
+                    i += 2
+                    col += 2
+                else:
+                    tokens.append(Token(9, <span class="string">"оператор"</span>, <span class="string">"-"</span>, line, start_col, col))
+                    i += 1
+                    col += 1
+                continue
+
+            if char in self.single_chars:
+                code, type_name = self.single_chars[char]
+                tokens.append(Token(code, type_name, char, line, start_col, col))
+                i += 1
+                col += 1
+                continue
+
+            lexeme = char
+            i += 1
+            col += 1
+            while i < len(text) and text[i] not in '\t\n\r ' and text[i] not in self.single_chars and not text[i].isalpha() and not text[i].isdigit():
+                lexeme += text[i]
+                i += 1
+                col += 1
+            tokens.append(Token(<span class="string">"ERROR"</span>, <span class="string">"недопустимый символ"</span>, lexeme, line, start_col, col - 1, is_error=True))
+
+        return tokens</code></pre>
+            </td>
+        </tr>
+    </tbody>
+</table>
 
 </body>
 </html>
