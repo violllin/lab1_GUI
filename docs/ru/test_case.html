@@ -1,10 +1,102 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            line-height: 1.6;
+            color: #000000;
+            padding: 20px;
+            background-color: #ffffff;
+        }
+        h2 {
+            color: #2e7d32;
+            border-bottom: 2px solid #2e7d32;
+            padding-bottom: 5px;
+        }
+        .test-case {
+            margin-bottom: 40px;
+            border: 1px solid #eee;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        .case-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        .code-block {
+            background-color: #f5f5f5;
+            padding: 10px;
+            font-family: monospace;
+            border-left: 4px solid #2e7d32;
+            margin-bottom: 15px;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        .description {
+            font-style: italic;
+            color: #666;
+            margin-top: 10px;
+            text-align: center;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 10px auto;
+            border: 1px solid #ddd;
+        }
+    </style>
 </head>
 <body>
+    <h2>Тестирование синтаксического анализатора</h2>
+
+    <p>Ниже представлены результаты тестирования разработанного парсера для лямбда-выражений языка Swift на корректных и ошибочных данных.</p>
+
+    <div class="test-case">
+        <div class="case-title">1. Тестовый пример 1 (Корректное выражение)</div>
+        <div class="code-block">let calc = { (a: Int, b: Int, c: Int) -> Int in return a + (b * c) };</div>
+        <p>Результат: анализ завершен успешно, ошибок не обнаружено.</p>
+        <img src="/images/task_html/example1.png">
+        <p class="description">Рис. 1 — Тестовый пример 1</p>
+    </div>
+
+    <div class="test-case">
+        <div class="case-title">2. Тестовый пример 2 (Корректное выражение)</div>
+        <div class="code-block">let simple = { (s: String) -> String in return s };</div>
+        <p>Результат: анализ завершен успешно, ошибок не обнаружено.</p>
+        <p class="description">Рис. 2 — Тестовый пример 2</p>
+    </div>
+
+    <div class="test-case">
+        <div class="case-title">3. Тестовый пример 3 (Ошибки в типах и знаках препинания)</div>
+        <div class="code-block">let calc = { (a: I%nt, b:::: Int c: Int,,,,) -> Int in return a + (b * c) };</div>
+        <p>Результат: обнаружены и нейтрализованы ошибки в объявлении типов и лишние символы пунктуации.</p>
+        <p class="description">Рис. 3 — Тестовый пример 3</p>
+    </div>
+
+    <div class="test-case">
+        <div class="case-title">4. Тестовый пример 4 (Множественные синтаксические ошибки)</div>
+        <div class="code-block">!!let calc = { (: Int, b: Int c: Int,,) -@> Int in @@ return a + (b * c)};;;</div>
+        <p>Результат: выявлены ошибки в ключевых словах, пропусках идентификаторов и некорректных операторах.</p>
+        <p class="description">Рис. 4 — Тестовый пример 4</p>
+    </div>
+
+    <div class="test-case">
+        <div class="case-title">5. Тестовый пример 5 (Ошибки в идентификаторах и операторах)</div>
+        <div class="code-block">?let c^alc = { (a: Int, b: Int, c: Int) -?> Int i+n return a + (b * c) };</div>
+        <p>Результат: нейтрализация ошибок в именах переменных и служебных конструкторах (in).</p>
+        <p class="description">Рис. 5 — Тестовый пример 5</p>
+    </div>
+
+    <div class="test-case">
+        <div class="case-title">6. Тестовый пример 6 (Использование спецсимволов)</div>
+        <div class="code-block">let @ calc = @ { (a: Int, b: @ Int, c: Int) -@> Int in @ return @ a + (b * c)}; @</div>
+        <p>Результат: диагностика лишних символов '@' в различных частях выражения.</p>
+        <p class="description">Рис. 6 — Тестовый пример 6</p>
+    </div>
 
 </body>
 </html>
