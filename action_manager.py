@@ -1,15 +1,14 @@
 import os
 from PyQt6.QtGui import QAction, QKeySequence, QIcon
 from translations import STRINGS
-
+from utils import resource_path
 class ActionManager:
     def __init__(self, window, controller):
 
         style = window.style()
         self.win = window
         self.ctrl = controller
-        base_path = os.path.dirname(__file__)
-        cut_icon_path = os.path.join(base_path, "images", "scissors.png")
+        cut_icon_path = resource_path(os.path.join("images", "scissors.png"))
 
         self.antlr_run_act = QAction(style.standardIcon(style.StandardPixmap.SP_DesktopIcon), "Run ANTLR", window)
 

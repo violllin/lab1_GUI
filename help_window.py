@@ -1,4 +1,6 @@
+import os
 from PyQt6.QtWidgets import QDialog, QVBoxLayout, QTextBrowser
+from utils import resource_path
 
 class HelpWindow(QDialog):
     def __init__(self, parent=None, lang="ru"):
@@ -13,14 +15,17 @@ class HelpWindow(QDialog):
 
         layout = QVBoxLayout(self)
         self.browser = QTextBrowser()
+
+        img_base = resource_path(os.path.join("images", "help")).replace("\\", "/")
+
         help_content = {
-            "ru": """
+            "ru": f"""
             <html>
             <body style='font-family: Arial, sans-serif; font-size: 18px; line-height: 1.6; padding: 20px; color: black;'>
                 <h1 style='color: black; border-bottom: 2px solid black; font-size: 24px;'>Описание реализованных функций программы</h1>
 
                 <p>Главное окно программы с рабочей областью и таблицей результатов:</p>
-                <p align='center'><img src='images/help/main_window.jpg' width='450'></p>
+                <p align='center'><img src='file:///{img_base}/main_window.jpg' width='450'></p>
 
                 <h2 style='color: black; font-size: 20px;'>Меню "Файл"</h2>
                 <div style='margin-left: 20px;'>
@@ -30,7 +35,7 @@ class HelpWindow(QDialog):
                     <b>Сохранить как</b> — позволяет сохранить документ под новым именем.<br>
                     <b>Выход</b> — закрывает приложение (с предложением сохранить изменения).<br>
                 </div>
-                <p align='center'><img src='images/help/menu_file.jpg' width='450'></p>
+                <p align='center'><img src='file:///{img_base}/menu_file.jpg' width='450'></p>
 
                 <h2 style='color: black; font-size: 20px;'>Меню "Правка"</h2>
                 <div style='margin-left: 20px;'>
@@ -42,7 +47,7 @@ class HelpWindow(QDialog):
                     <b>Удалить</b> — очищает выделенный фрагмент текста.<br>
                     <b>Выделить все</b> — выделяет весь текст в текущем окне редактирования.<br>
                 </div>
-                <p align='center'><img src='images/help/menu_edit.jpg' width='450'></p>
+                <p align='center'><img src='file:///{img_base}/menu_edit.jpg' width='450'></p>
 
                 <h2 style='color: black; font-size: 20px;'>Меню "Текст"</h2>
                 <div style='margin-left: 20px;'>
@@ -55,27 +60,27 @@ class HelpWindow(QDialog):
                     <b>Список литературы</b> — выводит перечень использованных источников.<br>
                     <b>Исходный код программы</b> — открывает листинг кода самого приложения.<br>
                 </div>
-                <p align='center'><img src='images/help/menu_text.jpg' width='450'></p>
+                <p align='center'><img src='file:///{img_base}/menu_text.jpg' width='450'></p>
 
                 <h2 style='color: black; font-size: 20px;'>Меню "Пуск"</h2>
                 <div style='margin-left: 20px;'>
                     <b>Запуск синтаксического анализатора</b> — инициирует проверку кода в активной вкладке. Выполняет лексический и синтаксический анализ с выводом результатов в таблицу.<br>
                 </div>
-                <p align='center'><img src='images/help/menu_run.jpg' width='450'></p>
+                <p align='center'><img src='file:///{img_base}/menu_run.jpg' width='450'></p>
 
                 <h2 style='color: black; font-size: 20px;'>Меню "Справка"</h2>
                 <div style='margin-left: 20px;'>
                     <b>Вызов справки</b> — открывает данное руководство пользователя.<br>
                     <b>О программе</b> — выводит информацию о разработчике, теме работы и версии приложения.<br>
                 </div>
-                <p align='center'><img src='images/help/menu_help.jpg' width='450'></p>
+                <p align='center'><img src='file:///{img_base}/menu_help.jpg' width='450'></p>
 
                 <h2 style='color: black; font-size: 20px;'>Панель инструментов</h2>
                 <p>Для быстрого доступа к основным операциям предусмотрена панель под главным меню:</p>
                 <div style='margin-left: 20px;'>
                     На панели расположены кнопки: Создать, Открыть, Сохранить, Отменить, Повторить, Копировать, Вырезать, Вставить, Запуск анализатора и Вызов справки. Также присутствует инструмент для быстрого <b>изменения масштаба шрифта</b> в редакторе.<br>
                 </div>
-                <p align='center'><img src='images/help/toolbar.jpg' width='450'></p>
+                <p align='center'><img src='file:///{img_base}/toolbar.jpg' width='450'></p>
 
                 <h2 style='color: black; font-size: 20px;'>Рабочая область и обработка ошибок</h2>
                 <div style='margin-left: 20px;'>
@@ -83,17 +88,17 @@ class HelpWindow(QDialog):
                     <b>Редактор кода</b> — поддерживает автоматическую нумерацию строк и подсветку синтаксиса (синий для ключевых слов, зеленый для строк, серый для комментариев и оранжевый для чисел).<br>
                     <b>Таблица результатов</b> — отображает найденные в ходе анализа ошибки. Содержит столбцы: №, Местоположение (строка, символ), Описание ошибки и Неверный фрагмент. Система настроена на строгую локализацию: одна фактическая ошибка генерирует ровно одно точное сообщение в таблице.<br>
                 </div>
-                <p align='center'><img src='images/help/work_space.jpg' width='450'></p>
+                <p align='center'><img src='file:///{img_base}/work_space.jpg' width='450'></p>
             </body>
             </html>
             """,
-            "en": """
+            "en": f"""
             <html>
             <body style='font-family: Arial, sans-serif; font-size: 18px; line-height: 1.6; padding: 20px; color: black;'>
                 <h1 style='color: black; border-bottom: 2px solid black; font-size: 24px;'>Program Functions Description</h1>
 
                 <p>Main program window with workspace and results table:</p>
-                <p align='center'><img src='images/help/main_window_en.jpg' width='450'></p>
+                <p align='center'><img src='file:///{img_base}/main_window_en.jpg' width='450'></p>
 
                 <h2 style='color: black; font-size: 20px;'> "File" Menu</h2>
                 <div style='margin-left: 20px;'>
@@ -103,7 +108,7 @@ class HelpWindow(QDialog):
                     <b>Save As</b> — allows saving the document under a new name.<br>
                     <b>Exit</b> — closes the application (with a prompt to save changes).<br>
                 </div>
-                <p align='center'><img src='images/help/menu_file_en.jpg' width='450'></p>
+                <p align='center'><img src='file:///{img_base}/menu_file_en.jpg' width='450'></p>
 
                 <h2 style='color: black; font-size: 20px;'> "Edit" Menu</h2>
                 <div style='margin-left: 20px;'>
@@ -115,7 +120,7 @@ class HelpWindow(QDialog):
                     <b>Delete</b> — clears the selected text fragment.<br>
                     <b>Select All</b> — highlights all text in the current editing window.<br>
                 </div>
-                <p align='center'><img src='images/help/menu_edit_en.jpg' width='450'></p>
+                <p align='center'><img src='file:///{img_base}/menu_edit_en.jpg' width='450'></p>
 
                 <h2 style='color: black; font-size: 20px;'> "Text" Menu</h2>
                 <div style='margin-left: 20px;'>
@@ -128,27 +133,27 @@ class HelpWindow(QDialog):
                     <b>References</b> — displays the list of used sources.<br>
                     <b>Program Source Code</b> — opens the listing of the application's own code.<br>
                 </div>
-                <p align='center'><img src='images/help/menu_text_en.jpg' width='450'></p>
+                <p align='center'><img src='file:///{img_base}/menu_text_en.jpg' width='450'></p>
 
                 <h2 style='color: black; font-size: 20px;'> "Run" Menu</h2>
                 <div style='margin-left: 20px;'>
                     <b>Run Parser</b> — initiates the analysis of the code in the active tab. Performs lexical and syntax analysis with results output to the table.<br>
                 </div>
-                <p align='center'><img src='images/help/menu_run_en.jpg' width='450'></p>
+                <p align='center'><img src='file:///{img_base}/menu_run_en.jpg' width='450'></p>
 
                 <h2 style='color: black; font-size: 20px;'> "Help" Menu</h2>
                 <div style='margin-left: 20px;'>
                     <b>View Help</b> — opens this user manual.<br>
                     <b>About</b> — displays developer info, project theme, and version.<br>
                 </div>
-                <p align='center'><img src='images/help/menu_help_en.jpg' width='450'></p>
+                <p align='center'><img src='file:///{img_base}/menu_help_en.jpg' width='450'></p>
 
                 <h2 style='color: black; font-size: 20px;'>Toolbar</h2>
                 <p>For quick access to core operations, a toolbar is provided below the main menu:</p>
                 <div style='margin-left: 20px;'>
                     The panel includes buttons for: Create, Open, Save, Undo, Redo, Copy, Cut, Paste, Run Parser, and View Help. A <b>Font Zoom</b> tool is also available for quick adjustment of the editor text size.<br>
                 </div>
-                <p align='center'><img src='images/help/toolbar_en.jpg' width='450'></p>
+                <p align='center'><img src='file:///{img_base}/toolbar_en.jpg' width='450'></p>
 
                 <h2 style='color: black; font-size: 20px;'>Workspace and Error Handling</h2>
                 <div style='margin-left: 20px;'>
@@ -156,7 +161,7 @@ class HelpWindow(QDialog):
                     <b>Code Editor</b> — supports automatic line numbering and syntax highlighting (Blue for keywords, Green for strings, Gray for comments, and Orange for numbers).<br>
                     <b>Results Table</b> — displays errors found during analysis. Columns include: No., Location (line, char), Error Description, and Invalid Fragment. The system is tuned for strict localization: one actual error generates exactly one precise message in the table.<br>
                 </div>
-                <p align='center'><img src='images/help/work_space_en.jpg' width='450'></p>
+                <p align='center'><img src='file:///{img_base}/work_space_en.jpg' width='450'></p>
             </body>
             </html>
             """

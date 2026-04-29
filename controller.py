@@ -12,6 +12,7 @@ from antlr4 import InputStream, CommonTokenStream
 from antlr_tool.MyGrammarLexer import MyGrammarLexer
 from antlr_tool.MyGrammarParser import MyGrammarParser
 from info_windows import DocWindow
+from utils import resource_path
 
 class MyAntlrErrorListener(ErrorListener):
     def __init__(self):
@@ -188,16 +189,19 @@ class EditorController:
             current_lang = self.ui.current_lang
 
             rel_path = os.path.join("docs", current_lang, filename)
-            abs_path = os.path.abspath(rel_path)
+
+            abs_path = resource_path(rel_path)
+
+            abs_path = abs_path.replace("\\", "/")
 
             if os.path.exists(abs_path):
-                webbrowser.open(f"file://{abs_path}")
+                webbrowser.open(f"file:///{abs_path}")
             else:
                 msg = "File not found" if current_lang == "en" else "Файл не найден"
-                QMessageBox.warning(self.ui, "Error" if current_lang == "en" else "Ошибка", f"{msg}: {rel_path}")
+                QMessageBox.warning(self.ui, "Error" if current_lang == "en" else "Ошибка", f"{msg}:\n{abs_path}")
 
     def show_help(self):
-        self.help_window = HelpWindow(self.ui, self.lang)
+        self.help_window = HelpWindow(self.ui, self.ui.current_lang)
         self.help_window.show()
 
     def zoom_in(self):
