@@ -225,7 +225,8 @@ class EditorController:
 
     def run_lexer(self):
         editor = self.ui.get_current_editor()
-        if not editor: return
+        if not editor:
+            return
 
         file_path = editor.property("file_path") or "New File"
         text = editor.toPlainText()
@@ -237,6 +238,8 @@ class EditorController:
         lexer_table.setRowCount(0)
         errors_table = self.ui.output_panel.errors_table
         errors_table.setRowCount(0)
+        tetrads_table = self.ui.output_panel.tetrads_table
+        tetrads_table.setRowCount(0)
 
         valid_tokens_count = 1
         for t in tokens:
@@ -256,12 +259,8 @@ class EditorController:
 
                 if t.type_name == 'Error':
                     error_color = QColor("#FFCCCC")
-                    item_num.setBackground(error_color)
-                    item_file.setBackground(error_color)
-                    item_code.setBackground(error_color)
-                    item_type.setBackground(error_color)
-                    item_val.setBackground(error_color)
-                    item_pos.setBackground(error_color)
+                    for item in [item_num, item_file, item_code, item_type, item_val, item_pos]:
+                        item.setBackground(error_color)
 
                 lexer_table.setItem(row, 0, item_num)
                 lexer_table.setItem(row, 1, item_file)
@@ -273,7 +272,7 @@ class EditorController:
                 valid_tokens_count += 1
 
         parser = Parser(tokens)
-        syntax_errors = parser.parse()
+        syntax_errors, tetrads = parser.parse()
 
         if syntax_errors:
             for i, err in enumerate(syntax_errors, start=1):
@@ -282,8 +281,28 @@ class EditorController:
             self.ui.statusBar().showMessage(f"Синтаксический анализ: найдено ошибок: {len(syntax_errors)}", 5000)
             self.ui.output_panel.setCurrentWidget(errors_table)
         else:
-            self.ui.statusBar().showMessage("Синтаксических ошибок не обнаружено", 5000)
-            self.ui.output_panel.setCurrentWidget(lexer_table)
+            self.ui.statusBar().showMessage("Синтаксических ошибок не обнаружено. Тетрады построены.", 5000)
+
+            for i, tetrad in enumerate(tetrads, start=1):
+                row = tetrads_table.rowCount()
+                tetrads_table.insertRow(row)
+
+                op, arg1, arg2, res = tetrad
+
+                items = [
+                    QTableWidgetItem(str(i)),
+                    QTableWidgetItem(file_path),
+                    QTableWidgetItem(str(op)),
+                    QTableWidgetItem(str(arg1) if arg1 is not None else ""),
+                    QTableWidgetItem(str(arg2) if arg2 is not None else ""),
+                    QTableWidgetItem(str(res))
+                ]
+
+                for col_idx, item in enumerate(items):
+                    item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+                    tetrads_table.setItem(row, col_idx, item)
+
+            self.ui.output_panel.setCurrentWidget(tetrads_table)
 
     def _add_token_to_table(self, table, error, index):
         row = table.rowCount()
