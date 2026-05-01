@@ -11,7 +11,6 @@ from antlr4.error.ErrorListener import ErrorListener
 from antlr4 import InputStream, CommonTokenStream
 from antlr_tool.MyGrammarLexer import MyGrammarLexer
 from antlr_tool.MyGrammarParser import MyGrammarParser
-from info_windows import DocWindow
 from utils import resource_path
 
 class MyAntlrErrorListener(ErrorListener):
@@ -232,44 +231,58 @@ class EditorController:
         text = editor.toPlainText()
 
         scanner = Scanner()
-        tokens = scanner.analyze(text)
+        tokens, lex_errors = scanner.analyze(text)
+
+        lexer_table = self.ui.output_panel.lexer_table
+        lexer_table.setRowCount(0)
+        errors_table = self.ui.output_panel.errors_table
+        errors_table.setRowCount(0)
+
+        valid_tokens_count = 1
+        for t in tokens:
+            if t.type_name not in ('Space', 'EOF'):
+                row = lexer_table.rowCount()
+                lexer_table.insertRow(row)
+
+                item_num = QTableWidgetItem(str(valid_tokens_count))
+                item_file = QTableWidgetItem(file_path)
+                item_code = QTableWidgetItem(str(t.code))
+                item_type = QTableWidgetItem(t.type_name)
+                item_val = QTableWidgetItem(t.value)
+                item_pos = QTableWidgetItem(f"({t.line}, {t.start})")
+
+                lex_len = len(t.value) if t.value else 1
+                item_pos.setData(Qt.ItemDataRole.UserRole, (t.line, t.start, lex_len))
+
+                lexer_table.setItem(row, 0, item_num)
+                lexer_table.setItem(row, 1, item_file)
+                lexer_table.setItem(row, 2, item_code)
+                lexer_table.setItem(row, 3, item_type)
+                lexer_table.setItem(row, 4, item_val)
+                lexer_table.setItem(row, 5, item_pos)
+
+                valid_tokens_count += 1
+
+        if lex_errors:
+            for i, err in enumerate(lex_errors, start=1):
+                self._add_error_to_table(errors_table, err, i, file_path)
+
+            self.ui.statusBar().showMessage(f"Лексический анализ: найдено ошибок: {len(lex_errors)}", 5000)
+            self.ui.output_panel.setCurrentWidget(errors_table)
+            return
+
         parser = Parser(tokens)
         syntax_errors = parser.parse()
 
-        table = self.ui.output_panel.output_table
-        table.setRowCount(0)
+        if syntax_errors:
+            for i, err in enumerate(syntax_errors, start=1):
+                self._add_error_to_table(errors_table, err, i, file_path)
 
-        if not syntax_errors:
-            self.ui.statusBar().showMessage(STRINGS[self.lang]["msg_no_errors"], 5000)
-            return
-
-        for i, err in enumerate(syntax_errors, start=1):
-            row = table.rowCount()
-            table.insertRow(row)
-
-            fragment = err.token.lexeme if err.token else "EOF"
-            pos_str = f"({err.token.line}, {err.token.start})" if err.token else "-"
-
-            description = err.message
-
-            items = [
-                QTableWidgetItem(str(i)),
-                QTableWidgetItem(file_path),
-                QTableWidgetItem(fragment),
-                QTableWidgetItem(description),
-                QTableWidgetItem(pos_str)
-            ]
-
-            if err.token:
-                length = err.token.end - err.token.start + 1
-                items[4].setData(Qt.ItemDataRole.UserRole, (err.token.line, err.token.start, length))
-
-            for col, item in enumerate(items):
-                item.setBackground(QColor("#ffcccc"))
-                table.setItem(row, col, item)
-
-        msg = STRINGS[self.lang]["msg_errors_found"].format(len(syntax_errors))
-        self.ui.statusBar().showMessage(msg, 5000)
+            self.ui.statusBar().showMessage(f"Синтаксический анализ: найдено ошибок: {len(syntax_errors)}", 5000)
+            self.ui.output_panel.setCurrentWidget(errors_table)
+        else:
+            self.ui.statusBar().showMessage("Ошибок не обнаружено", 5000)
+            self.ui.output_panel.setCurrentWidget(lexer_table)
 
     def _add_token_to_table(self, table, error, index):
         row = table.rowCount()
@@ -312,3 +325,22 @@ class EditorController:
             )
             editor.setTextCursor(cursor)
             editor.setFocus()
+
+    def _add_error_to_table(self, table, error, index, file_path):
+        row = table.rowCount()
+        table.insertRow(row)
+
+        items = [
+            QTableWidgetItem(str(index)),
+            QTableWidgetItem(file_path),
+            QTableWidgetItem(error.lexeme if error.lexeme else "—"),
+            QTableWidgetItem(error.message),
+            QTableWidgetItem(f"({error.line}, {error.column})")
+        ]
+
+        lex_len = len(error.lexeme) if error.lexeme else 1
+        items[4].setData(Qt.ItemDataRole.UserRole, (error.line, error.column, lex_len))
+
+        for item in items:
+            item.setBackground(QColor("#FFCCCC"))
+            table.setItem(row, items.index(item), item)
