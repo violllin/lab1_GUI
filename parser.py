@@ -51,7 +51,7 @@ class Parser:
 
         token = self.get_current_token()
         if token and token.type_name != 'EOF':
-            self.error("Лишние символы в конце выражения (возможно, не закрыта скобка)")
+            self.error("Лишние символы в конце выражения")
 
         return self.errors
 

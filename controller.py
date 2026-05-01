@@ -231,7 +231,7 @@ class EditorController:
         text = editor.toPlainText()
 
         scanner = Scanner()
-        tokens, lex_errors = scanner.analyze(text)
+        tokens, _ = scanner.analyze(text)
 
         lexer_table = self.ui.output_panel.lexer_table
         lexer_table.setRowCount(0)
@@ -254,6 +254,15 @@ class EditorController:
                 lex_len = len(t.value) if t.value else 1
                 item_pos.setData(Qt.ItemDataRole.UserRole, (t.line, t.start, lex_len))
 
+                if t.type_name == 'Error':
+                    error_color = QColor("#FFCCCC")
+                    item_num.setBackground(error_color)
+                    item_file.setBackground(error_color)
+                    item_code.setBackground(error_color)
+                    item_type.setBackground(error_color)
+                    item_val.setBackground(error_color)
+                    item_pos.setBackground(error_color)
+
                 lexer_table.setItem(row, 0, item_num)
                 lexer_table.setItem(row, 1, item_file)
                 lexer_table.setItem(row, 2, item_code)
@@ -262,14 +271,6 @@ class EditorController:
                 lexer_table.setItem(row, 5, item_pos)
 
                 valid_tokens_count += 1
-
-        if lex_errors:
-            for i, err in enumerate(lex_errors, start=1):
-                self._add_error_to_table(errors_table, err, i, file_path)
-
-            self.ui.statusBar().showMessage(f"Лексический анализ: найдено ошибок: {len(lex_errors)}", 5000)
-            self.ui.output_panel.setCurrentWidget(errors_table)
-            return
 
         parser = Parser(tokens)
         syntax_errors = parser.parse()
@@ -281,7 +282,7 @@ class EditorController:
             self.ui.statusBar().showMessage(f"Синтаксический анализ: найдено ошибок: {len(syntax_errors)}", 5000)
             self.ui.output_panel.setCurrentWidget(errors_table)
         else:
-            self.ui.statusBar().showMessage("Ошибок не обнаружено", 5000)
+            self.ui.statusBar().showMessage("Синтаксических ошибок не обнаружено", 5000)
             self.ui.output_panel.setCurrentWidget(lexer_table)
 
     def _add_token_to_table(self, table, error, index):
