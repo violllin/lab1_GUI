@@ -66,6 +66,7 @@ STRINGS = {
         "col_operand1": "Операнд 1",
         "col_operand2": "Операнд 2",
         "col_result": "Результат",
+        "tab_rpn": "ПОЛИЗ"
     },
     "en": {
         "window_title": "Text Editor",
@@ -132,6 +133,7 @@ STRINGS = {
         "col_operator": "Operator",
         "col_operand1": "Operand 1",
         "col_operand2": "Operand 2",
-        "col_result": "Result"
+        "col_result": "Result",
+        "tab_rpn": "RPN",
     }
 }

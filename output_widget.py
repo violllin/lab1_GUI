@@ -8,10 +8,12 @@ class OutputPanel(QTabWidget):
         self.errors_table = self._create_table(5)
         self.lexer_table = self._create_table(6)
         self.tetrads_table = self._create_table(6)
+        self.rpn_table = self._create_table(6)
 
         self.addTab(self.errors_table, "")
         self.addTab(self.lexer_table, "")
         self.addTab(self.tetrads_table, "")
+        self.addTab(self.rpn_table, "")
 
         self.retranslate("ru")
 
@@ -53,5 +55,13 @@ class OutputPanel(QTabWidget):
             s.get("col_operator", "Оператор"),
             s.get("col_operand1", "Операнд 1"),
             s.get("col_operand2", "Операнд 2"),
+            s.get("col_result", "Результат")
+        ])
+        self.rpn_table.setHorizontalHeaderLabels([
+            s.get("col_id", "№"),
+            s.get("col_path", "Путь к файлу"),
+            s.get("col_operand1", "Операнд 1"),
+            s.get("col_operand2", "Операнд 2"),
+            s.get("col_operator", "Оператор"),
             s.get("col_result", "Результат")
         ])

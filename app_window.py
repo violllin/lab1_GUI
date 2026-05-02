@@ -155,8 +155,8 @@ class MainWindow(QMainWindow):
         self.status.addPermanentWidget(self.font_label)
         self.status.addPermanentWidget(self.cursor_label)
 
-    def update_analysis_stats(self, errors_count, tokens_count, quadruples_count):
-        text = f"Ошибок: {errors_count}, Лексем: {tokens_count}, Тетрад: {quadruples_count} | "
+    def update_analysis_stats(self, errors_count, tokens_count, quadruples_count, rpn_result="—"):
+        text = f"Ошибок: {errors_count}, Лексем: {tokens_count}, Тетрад: {quadruples_count}, ПОЛИЗ: {rpn_result} | "
         self.stats_label.setText(text)
 
     def update_cursor_info(self):
