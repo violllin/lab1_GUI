@@ -145,6 +145,7 @@ class MainWindow(QMainWindow):
 
     def setup_status_bar(self):
         self.status = QStatusBar()
+        self.status.setStyleSheet("font-size: 12pt; font-weight: 600;")
         self.setStatusBar(self.status)
 
         self.stats_label = QLabel("")
@@ -156,7 +157,7 @@ class MainWindow(QMainWindow):
         self.status.addPermanentWidget(self.cursor_label)
 
     def update_analysis_stats(self, errors_count, tokens_count, quadruples_count, rpn_result="—"):
-        text = f"Ошибок: {errors_count}, Лексем: {tokens_count}, Тетрад: {quadruples_count}, ПОЛИЗ: {rpn_result} | "
+        text = f"Ошибок: {errors_count}, Лексем: {tokens_count}, Тетрад: {quadruples_count}, ПОЛИЗ(РЕЗУЛЬТАТ): {rpn_result} "
         self.stats_label.setText(text)
 
     def update_cursor_info(self):
