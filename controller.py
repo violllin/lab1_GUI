@@ -271,8 +271,12 @@ class EditorController:
 
                 valid_tokens_count += 1
 
+        tokens_count = len([t for t in tokens if t.type_name not in ('Space', 'EOF')])
+
         parser = Parser(tokens)
         syntax_errors, tetrads = parser.parse()
+
+        self.ui.update_analysis_stats(len(syntax_errors), tokens_count, len(tetrads))
 
         if syntax_errors:
             for i, err in enumerate(syntax_errors, start=1):

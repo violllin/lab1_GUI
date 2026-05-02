@@ -146,10 +146,18 @@ class MainWindow(QMainWindow):
     def setup_status_bar(self):
         self.status = QStatusBar()
         self.setStatusBar(self.status)
+
+        self.stats_label = QLabel("")
         self.cursor_label = QLabel("")
         self.font_label = QLabel("")
+
+        self.status.addPermanentWidget(self.stats_label)
         self.status.addPermanentWidget(self.font_label)
         self.status.addPermanentWidget(self.cursor_label)
+
+    def update_analysis_stats(self, errors_count, tokens_count, quadruples_count):
+        text = f"Ошибок: {errors_count}, Лексем: {tokens_count}, Тетрад: {quadruples_count} | "
+        self.stats_label.setText(text)
 
     def update_cursor_info(self):
         editor = self.get_current_editor()
