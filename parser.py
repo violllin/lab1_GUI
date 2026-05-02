@@ -54,7 +54,9 @@ class Parser:
             self.errors.append(AppSyntaxError(message, line, col, "EOF"))
 
     def parse(self):
-        if not self.tokens:
+        token = self.get_current_token()
+
+        if not token or token.type_name == 'EOF':
             return [], []
 
         self.expression()
