@@ -57,16 +57,13 @@ class Parser:
         if not self.tokens:
             return [], []
 
-        while self.pos < len(self.tokens):
-            token = self.get_current_token()
-            if not token or token.type_name == 'EOF':
-                break
+        self.expression()
 
-            if token.type_name in ('Number', 'Identifier') or token.value in ('(', '+', '-'):
-                self.expression()
-            else:
-                self.error(f"Недопустимый символ: {token.value}")
-                self.pos += 1
+        if self.pos < len(self.tokens):
+            token = self.get_current_token()
+            if token and token.type_name != 'EOF':
+                self.error(f"Неожиданный символ: {token.value}")
+                self.pos = len(self.tokens)
 
         if self.errors:
             self.quadruples = []
@@ -75,50 +72,50 @@ class Parser:
 
     def expression(self):
         left = self.term()
-        while True:
+        while self.pos < len(self.tokens):
             token = self.get_current_token()
-            if token and token.value in ('+', '-'):
+            if not token or token.type_name == 'EOF' or token.value == ')':
+                break
+
+            if token.value in ('+', '-'):
                 op = token.value
                 self.match()
                 right = self.term()
-                if not self.errors:
+                if left is not None and right is not None:
                     res = self.new_temp()
                     self.quadruples.append((op, left, right, res))
                     left = res
             else:
-                break
+                self.error(f"Неожиданный символ: {token.value}")
+                self.pos += 1
+
         return left
 
     def term(self):
         left = self.factor()
-        while True:
+        while self.pos < len(self.tokens):
             token = self.get_current_token()
-            if token and token.value in ('*', '/', '%'):
+            if not token or token.type_name == 'EOF' or token.value in (')', '+', '-'):
+                break
+
+            if token.value in ('*', '/', '%'):
                 op = token.value
                 self.match()
                 right = self.factor()
-                if not self.errors:
+                if left is not None and right is not None:
                     res = self.new_temp()
                     self.quadruples.append((op, left, right, res))
                     left = res
             else:
-                break
+                self.error(f"Неожиданный символ: {token.value}")
+                self.pos += 1
+
         return left
 
     def factor(self):
         token = self.get_current_token()
         if not token or token.type_name == 'EOF':
             self.error("Ожидался операнд")
-            return None
-
-        if token.value in ('+', '-'):
-            op = token.value
-            self.match()
-            operand = self.factor()
-            if not self.errors:
-                res = self.new_temp()
-                self.quadruples.append(Quadruple(op, operand, "—", res))
-                return res
             return None
 
         if token.type_name in ('Number', 'Identifier'):
@@ -136,4 +133,14 @@ class Parser:
         else:
             self.error(f"Некорректный фактор: {token.value}")
             self.pos += 1
+
+            while self.pos < len(self.tokens):
+                t = self.get_current_token()
+                if not t or t.type_name == 'EOF':
+                    break
+                if t.type_name in ('Number', 'Identifier') or t.value == '(':
+                    return self.factor()
+                if t.value in (')', '+', '-', '*', '/', '%'):
+                    break
+                self.pos += 1
             return None
