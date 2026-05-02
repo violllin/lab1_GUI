@@ -66,7 +66,11 @@ STRINGS = {
         "col_operand1": "Операнд 1",
         "col_operand2": "Операнд 2",
         "col_result": "Результат",
-        "tab_rpn": "ПОЛИЗ"
+        "tab_rpn": "ПОЛИЗ",
+        "stat_errors": "Ошибок",
+        "stat_lexemes": "Лексем",
+        "stat_tetrads": "Тетрад",
+        "stat_rpn": "ПОЛИЗ(РЕЗУЛЬТАТ)"
     },
     "en": {
         "window_title": "Text Editor",
@@ -135,5 +139,10 @@ STRINGS = {
         "col_operand2": "Operand 2",
         "col_result": "Result",
         "tab_rpn": "RPN",
+        "stat_errors": "Errors",
+        "stat_lexemes": "Lexemes",
+        "stat_tetrads": "Tetrads",
+        "stat_rpn": "RPN(RESULT)"
+
     }
 }

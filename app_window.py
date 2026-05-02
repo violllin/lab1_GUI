@@ -157,7 +157,13 @@ class MainWindow(QMainWindow):
         self.status.addPermanentWidget(self.cursor_label)
 
     def update_analysis_stats(self, errors_count, tokens_count, quadruples_count, rpn_result="—"):
-        text = f"Ошибок: {errors_count}, Лексем: {tokens_count}, Тетрад: {quadruples_count}, ПОЛИЗ(РЕЗУЛЬТАТ): {rpn_result} "
+        s = STRINGS[self.current_lang]
+
+        text = (f"{s['stat_errors']}: {errors_count}, "
+                f"{s['stat_lexemes']}: {tokens_count}, "
+                f"{s['stat_tetrads']}: {quadruples_count}, "
+                f"{s['stat_rpn']}: {rpn_result} ")
+
         self.stats_label.setText(text)
 
     def update_cursor_info(self):
