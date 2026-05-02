@@ -12,7 +12,6 @@ class Quadruple:
         self.arg2 = arg2
         self.result = result
 
-
 class Parser:
     def __init__(self, tokens):
         self.tokens = [t for t in tokens if t.type_name != 'Space']
@@ -64,7 +63,8 @@ class Parser:
         if self.pos < len(self.tokens):
             token = self.get_current_token()
             if token and token.type_name != 'EOF':
-                self.error(f"Неожиданный символ: {token.value}")
+                if token.type_name != 'Error':
+                    self.error(f"Неожиданный символ: {token.value}")
                 self.pos = len(self.tokens)
 
         if self.errors:
@@ -88,6 +88,9 @@ class Parser:
                     self.quadruples.append((op, left, right, res))
                     left = res
             else:
+                if token.type_name == 'Error':
+                    self.pos += 1
+                    continue
                 self.error(f"Неожиданный символ: {token.value}")
                 self.pos += 1
 
@@ -109,6 +112,9 @@ class Parser:
                     self.quadruples.append((op, left, right, res))
                     left = res
             else:
+                if token.type_name == 'Error':
+                    self.pos += 1
+                    continue
                 self.error(f"Неожиданный символ: {token.value}")
                 self.pos += 1
 
@@ -133,7 +139,8 @@ class Parser:
             return val
 
         else:
-            self.error(f"Некорректный фактор: {token.value}")
+            if token.type_name != 'Error':
+                self.error(f"Некорректный фактор: {token.value}")
             self.pos += 1
 
             while self.pos < len(self.tokens):
