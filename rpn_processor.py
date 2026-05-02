@@ -25,7 +25,7 @@ class RPNProcessor:
             elif token.value == ')':
                 while stack and stack[-1].value != '(':
                     output.append(stack.pop())
-                if stack: stack.pop()  # Удаляем '('
+                if stack: stack.pop()
             elif token.type_name == 'Operator':
                 while (stack and stack[-1].value != '(' and
                        self.precedence.get(stack[-1].value, 0) >= self.precedence.get(token.value, 0)):
