@@ -89,7 +89,7 @@ class Scanner:
                 i += 1; col += 1; continue
 
             if char == '\n':
-                tokens.append(Token(self.codes['EOF'], 'EOF', '\\n', line, col, col))
+                tokens.append(Token(self.codes['space'], 'Space', '\\n', line, col, col))
                 i += 1
                 line += 1
                 col = 1

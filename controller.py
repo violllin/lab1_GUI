@@ -235,7 +235,7 @@ class EditorController:
         text = editor.toPlainText()
 
         scanner = Scanner()
-        tokens, _ = scanner.analyze(text)
+        tokens, lexical_errors = scanner.analyze(text)
 
         lexer_table = self.ui.output_panel.lexer_table
         lexer_table.setRowCount(0)
@@ -249,57 +249,64 @@ class EditorController:
             rpn_table.setRowCount(0)
 
         valid_tokens_count = 1
-        has_lexical_errors = False
+        has_lexical_errors = len(lexical_errors) > 0
 
         for t in tokens:
+            row = lexer_table.rowCount()
+            lexer_table.insertRow(row)
+
+            item_num = QTableWidgetItem(str(valid_tokens_count))
+            item_file = QTableWidgetItem(file_path)
+            item_code = QTableWidgetItem(str(t.code))
+            item_type = QTableWidgetItem(t.type_name)
+
+            display_val = t.value
+            if display_val == ' ': display_val = "' '"
+
+            item_val = QTableWidgetItem(display_val)
+            item_pos = QTableWidgetItem(f"({t.line}, {t.start})")
+
+            lex_len = len(t.value) if t.value else 1
+            item_pos.setData(Qt.ItemDataRole.UserRole, (t.line, t.start, lex_len))
+
             if t.type_name == 'Error':
-                has_lexical_errors = True
+                error_color = QColor("#FFCCCC")
+                for item in [item_num, item_file, item_code, item_type, item_val, item_pos]:
+                    item.setBackground(error_color)
 
-            if t.type_name not in ('Space', 'EOF'):
-                row = lexer_table.rowCount()
-                lexer_table.insertRow(row)
+            lexer_table.setItem(row, 0, item_num)
+            lexer_table.setItem(row, 1, item_file)
+            lexer_table.setItem(row, 2, item_code)
+            lexer_table.setItem(row, 3, item_type)
+            lexer_table.setItem(row, 4, item_val)
+            lexer_table.setItem(row, 5, item_pos)
 
-                item_num = QTableWidgetItem(str(valid_tokens_count))
-                item_file = QTableWidgetItem(file_path)
-                item_code = QTableWidgetItem(str(t.code))
-                item_type = QTableWidgetItem(t.type_name)
-                item_val = QTableWidgetItem(t.value)
-                item_pos = QTableWidgetItem(f"({t.line}, {t.start})")
+            valid_tokens_count += 1
 
-                lex_len = len(t.value) if t.value else 1
-                item_pos.setData(Qt.ItemDataRole.UserRole, (t.line, t.start, lex_len))
+        tokens_count = valid_tokens_count - 1
 
-                if t.type_name == 'Error':
-                    error_color = QColor("#FFCCCC")
-                    for item in [item_num, item_file, item_code, item_type, item_val, item_pos]:
-                        item.setBackground(error_color)
+        if has_lexical_errors:
+            for i, err in enumerate(lexical_errors, start=1):
+                self._add_error_to_table(errors_table, err, i, file_path)
 
-                lexer_table.setItem(row, 0, item_num)
-                lexer_table.setItem(row, 1, item_file)
-                lexer_table.setItem(row, 2, item_code)
-                lexer_table.setItem(row, 3, item_type)
-                lexer_table.setItem(row, 4, item_val)
-                lexer_table.setItem(row, 5, item_pos)
+        parser_tokens = [t for t in tokens if t.type_name != 'Space']
 
-                valid_tokens_count += 1
-
-        tokens_count = len([t for t in tokens if t.type_name not in ('Space', 'EOF')])
-
-        parser = Parser(tokens)
+        parser = Parser(parser_tokens)
         syntax_errors, tetrads = parser.parse()
 
         rpn_result_str = "—"
-        total_errors = len(syntax_errors) + (1 if has_lexical_errors else 0)
+        total_errors = len(syntax_errors) + len(lexical_errors)
 
         if has_lexical_errors or syntax_errors:
             self.ui.update_analysis_stats(total_errors, tokens_count, 0, rpn_result_str)
 
             if syntax_errors:
-                for i, err in enumerate(syntax_errors, start=1):
+                start_idx = len(lexical_errors) + 1
+                for i, err in enumerate(syntax_errors, start=start_idx):
                     self._add_error_to_table(errors_table, err, i, file_path)
 
             self.ui.statusBar().showMessage(
-                f"Ошибки! Синтаксических: {len(syntax_errors)}. Тетрады и ПОЛИЗ не построены.", 5000)
+                f"Обнаружены ошибки! Тетрады и ПОЛИЗ не построены.", 10000)
             self.ui.output_panel.setCurrentWidget(errors_table)
             return
 
@@ -354,12 +361,8 @@ class EditorController:
                         rpn_table.setItem(row, col_idx, item)
 
         self.ui.update_analysis_stats(0, tokens_count, len(tetrads), rpn_result_str)
+        self.ui.statusBar().showMessage("Ошибок не обнаружено. Тетрады построены.", 10000)
 
-        status_msg = f"Ошибок не обнаружено. Тетрады построены."
-        if is_only_integers and rpn_result_str != "—":
-            status_msg = f"После тетрад, ПОЛИЗ: \"{rpn_result_str}\""
-
-        self.ui.statusBar().showMessage(status_msg, 5000)
 
     def _add_token_to_table(self, table, error, index):
         row = table.rowCount()
