@@ -33,6 +33,8 @@ class OutputPanel(QTabWidget):
         self.setTabText(0, s.get("tab_errors", "Ошибки"))
         self.setTabText(1, s.get("tab_lexer_result", "Лексер"))
         self.setTabText(2, s.get("tab_tetrads", "Тетрады"))
+        self.setTabText(3, s.get("tab_rpn", "ПОЛИЗ"))
+
 
         self.errors_table.setHorizontalHeaderLabels([
             s.get("col_id", "№"),

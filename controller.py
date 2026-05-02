@@ -12,6 +12,8 @@ from antlr4 import InputStream, CommonTokenStream
 from antlr_tool.MyGrammarLexer import MyGrammarLexer
 from antlr_tool.MyGrammarParser import MyGrammarParser
 from utils import resource_path
+from rpn_processor import RPNProcessor
+
 
 class MyAntlrErrorListener(ErrorListener):
     def __init__(self):
@@ -117,7 +119,8 @@ class EditorController:
                 editor.document().setModified(False)
                 self.ui.update_tab_title(editor)
                 return True
-            except: return False
+            except:
+                return False
         return self.file_save_as()
 
     def file_save_as(self):
@@ -241,8 +244,17 @@ class EditorController:
         tetrads_table = self.ui.output_panel.tetrads_table
         tetrads_table.setRowCount(0)
 
+        rpn_table = getattr(self.ui.output_panel, 'rpn_table', None)
+        if rpn_table:
+            rpn_table.setRowCount(0)
+
         valid_tokens_count = 1
+        has_lexical_errors = False
+
         for t in tokens:
+            if t.type_name == 'Error':
+                has_lexical_errors = True
+
             if t.type_name not in ('Space', 'EOF'):
                 row = lexer_table.rowCount()
                 lexer_table.insertRow(row)
@@ -276,37 +288,78 @@ class EditorController:
         parser = Parser(tokens)
         syntax_errors, tetrads = parser.parse()
 
-        self.ui.update_analysis_stats(len(syntax_errors), tokens_count, len(tetrads))
+        rpn_result_str = "—"
+        total_errors = len(syntax_errors) + (1 if has_lexical_errors else 0)
 
-        if syntax_errors:
-            for i, err in enumerate(syntax_errors, start=1):
-                self._add_error_to_table(errors_table, err, i, file_path)
+        if has_lexical_errors or syntax_errors:
+            self.ui.update_analysis_stats(total_errors, tokens_count, 0, rpn_result_str)
 
-            self.ui.statusBar().showMessage(f"Синтаксический анализ: найдено ошибок: {len(syntax_errors)}", 5000)
+            if syntax_errors:
+                for i, err in enumerate(syntax_errors, start=1):
+                    self._add_error_to_table(errors_table, err, i, file_path)
+
+            self.ui.statusBar().showMessage(
+                f"Ошибки! Синтаксических: {len(syntax_errors)}. Тетрады и ПОЛИЗ не построены.", 5000)
             self.ui.output_panel.setCurrentWidget(errors_table)
-        else:
-            self.ui.statusBar().showMessage("Синтаксических ошибок не обнаружено. Тетрады построены.", 5000)
+            return
 
-            for i, tetrad in enumerate(tetrads, start=1):
-                row = tetrads_table.rowCount()
-                tetrads_table.insertRow(row)
+        for i, tetrad in enumerate(tetrads, start=1):
+            row = tetrads_table.rowCount()
+            tetrads_table.insertRow(row)
 
-                op, arg1, arg2, res = tetrad
+            op, arg1, arg2, res = tetrad
 
-                items = [
-                    QTableWidgetItem(str(i)),
-                    QTableWidgetItem(file_path),
-                    QTableWidgetItem(str(op)),
-                    QTableWidgetItem(str(arg1) if arg1 is not None else ""),
-                    QTableWidgetItem(str(arg2) if arg2 is not None else ""),
-                    QTableWidgetItem(str(res))
-                ]
+            items = [
+                QTableWidgetItem(str(i)),
+                QTableWidgetItem(file_path),
+                QTableWidgetItem(str(op)),
+                QTableWidgetItem(str(arg1) if arg1 is not None else ""),
+                QTableWidgetItem(str(arg2) if arg2 is not None else ""),
+                QTableWidgetItem(str(res))
+            ]
 
-                for col_idx, item in enumerate(items):
-                    item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
-                    tetrads_table.setItem(row, col_idx, item)
+            for col_idx, item in enumerate(items):
+                item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+                tetrads_table.setItem(row, col_idx, item)
 
-            self.ui.output_panel.setCurrentWidget(tetrads_table)
+        self.ui.output_panel.setCurrentWidget(tetrads_table)
+
+        is_only_integers = all(t.type_name in ('Number', 'Operator', 'Bracket', 'Space', 'EOF') for t in tokens)
+
+        if is_only_integers:
+            rpn_processor = RPNProcessor()
+            rpn_tokens = rpn_processor.to_rpn(tokens)
+            final_result, steps = rpn_processor.calculate(rpn_tokens)
+
+            if final_result is not None:
+                rpn_result_str = str(final_result)
+            else:
+                rpn_result_str = "Ошибка вычисления"
+
+            if rpn_table:
+                for i, step in enumerate(steps, start=1):
+                    row = rpn_table.rowCount()
+                    rpn_table.insertRow(row)
+
+                    items = [
+                        QTableWidgetItem(str(i)),
+                        QTableWidgetItem(file_path),
+                        QTableWidgetItem(str(step.op1)),
+                        QTableWidgetItem(str(step.op2)),
+                        QTableWidgetItem(str(step.operator)),
+                        QTableWidgetItem(str(step.result))
+                    ]
+                    for col_idx, item in enumerate(items):
+                        item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+                        rpn_table.setItem(row, col_idx, item)
+
+        self.ui.update_analysis_stats(0, tokens_count, len(tetrads), rpn_result_str)
+
+        status_msg = f"Ошибок не обнаружено. Тетрады построены."
+        if is_only_integers and rpn_result_str != "—":
+            status_msg = f"После тетрад, ПОЛИЗ: \"{rpn_result_str}\""
+
+        self.ui.statusBar().showMessage(status_msg, 5000)
 
     def _add_token_to_table(self, table, error, index):
         row = table.rowCount()
