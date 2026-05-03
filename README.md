@@ -16,6 +16,10 @@ Swift
 5. F → num | id | (E)
 6. id → letter {letter | digit | _ }
 7. num → digit {digit}
+
+letter → a..z A..Z
+digit → 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
+
 ````
 ### Примеры корректных строк: 
 (a + b) * c
@@ -30,7 +34,7 @@ Swift
 ### Диаграмма лексера
 ![сканер.drawio.png](images/%D1%81%D0%BA%D0%B0%D0%BD%D0%B5%D1%80.drawio.png)
 ### Схема рекурсивного спуска
-
+![PA.png](images/PA.png)
 
 
 ### Скриншоты работы лексера 
@@ -56,7 +60,7 @@ Swift
 
 ## ПОЛИЗ
 **Строка: 10 / (5 - 3)**
-![rpn_2.png](images/rpn_2.png)
+![rpn_1.png](images/rpn_1.png)
 
 **Строка: ((100 - 10) / 9) * (2 + 3)**
-![rpn_1.png](images/rpn_1.png)
+![rpn_2.png](images/rpn_2.png)
