@@ -65,14 +65,38 @@ return b;
 
 ## Общее задание
 ### Установка среды
+![dependency1.png](images/GENERAL_PART/dependency1.png)
+![dependency2.png](images/GENERAL_PART/dependency2.png)
+![dependency3.png](images/GENERAL_PART/dependency3.png)
+
 
 ### Работа с AST
+![main.png](images/GENERAL_PART/main.png)
+![AST_command.png](images/GENERAL_PART/AST_command.png)
+![AST.png](images/GENERAL_PART/AST.png)
+
 
 ### Генерация LLVM IR
+![LLVM_IR_command.png](images/GENERAL_PART/LLVM_IR_command.png)
+![LLVM_IR.png](images/GENERAL_PART/LLVM_IR.png)
+
 
 ### Оптимизация IR
+![IR_command.png](images/GENERAL_PART/IR_command.png)
+![IR_0.png](images/GENERAL_PART/IR_0.png)
+
+![IR_command2.png](images/GENERAL_PART/IR_command2.png)
+![IR_1.png](images/GENERAL_PART/IR_1.png)
+
+![diff.png](images/GENERAL_PART/diff.png)
+
 
 ### Построение CFG
+![CFG_command.png](images/GENERAL_PART/CFG_command.png)
+![CFG_command2.png](images/GENERAL_PART/CFG_command2.png)
+
+![cfg_main.png](images/GENERAL_PART/cfg_main.png)
+![CFG_square.png](images/GENERAL_PART/CFG_square.png)
 
 
 ## Индивидуальное задание
@@ -95,7 +119,6 @@ return b;
 промежуточного представления LLVM IR?
 4. Для чего необходимо промежуточное представление (IR) в
 процессе компиляции?
-2
 5. Что делает инструкция alloc в LLVM IR, и зачем она
 используется в функциях?
 6. Зачем нужна оптимизация кода в компиляторе, и какие
