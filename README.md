@@ -82,11 +82,12 @@ return b;
 
 
 ### Работа с AST
-Исходный файл main.c
+Исходный файл main.c      
 ![main.png](images/GENERAL_PART/main.png)
 
 > Команда: clang -Xclang -ast-dump -fsyntax-only main.c
-> [AST_command.png](images/GENERAL_PART/AST_command.png)
+> 
+![AST_command.png](images/GENERAL_PART/AST_command.png)
 
 Получение AST:
 ![AST.png](images/GENERAL_PART/AST.png)
