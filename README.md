@@ -82,47 +82,57 @@ sudo apt install graphviz
 
 
 ### Работа с AST
-Исходный файл main.c      
+Исходный файл main.c     
+
 ![main.png](images/GENERAL_PART/main.png)
 
 Команда: clang -Xclang -ast-dump -fsyntax-only main.c
+
 ![AST_command.png](images/GENERAL_PART/AST_command.png)
 
 Получение AST:
+
 ![AST.png](images/GENERAL_PART/AST.png)
 
 
 ### Генерация LLVM IR
 Промежуточное представление LLVM IR с помощью команды: clang -S -emit-llvm main.c -o main.ll
+
 ![LLVM_IR_command.png](images/GENERAL_PART/LLVM_IR_command.png)
 ![LLVM_IR.png](images/GENERAL_PART/LLVM_IR.png)
 
 
 ### Оптимизация IR
-Получение LLVM IR без оптимизаций с использованием флага -O0: clang -O0 -S -emit-llvm main.c -o main_O0.ll
+Получение LLVM IR без оптимизаций с использованием флага -O0: clang -O0 -S -emit-llvm main.c -o main_O0.ll   
+
 ![IR_command.png](images/GENERAL_PART/IR_command.png)
 ![IR_0.png](images/GENERAL_PART/IR_0.png)
 
 Промежуточное представление кода с комплексной оптимизацией среднего уровня O2: clang -O2 -S -emit-llvm main.c -o main_O2.ll
+
 ![IR_command2.png](images/GENERAL_PART/IR_command2.png)
 ![IR_1.png](images/GENERAL_PART/IR_1.png)
 
 Сравнение двух файлов: 
+
 ![diff.png](images/GENERAL_PART/diff.png)
 
 
 ### Построение CFG
 Команда для генерации оптимизированного LLVM IR: clang -O2 -S -emit-llvm main.c -o main.ll  
 Команда для генерации .dot-файлов CFG для функций: opt -passes=dot-cfg -disable-output main.ll
+
 ![CFG_command.png](images/GENERAL_PART/CFG_command.png)
 
 Команды для преобразования файлов с расширением .dot в .png с помощью Graphviz:
 
 dot -Tpng .main.dot -o cfg_main.png   
 dot -Tpng .square.dot -o cfg_square.png
+
 ![CFG_command2.png](images/GENERAL_PART/CFG_command2.png)
 
 CFG для функции main и square:
+
 ![cfg_main.png](images/GENERAL_PART/cfg_main.png)
 ![CFG_square.png](images/GENERAL_PART/CFG_square.png)
 
@@ -130,13 +140,16 @@ CFG для функции main и square:
 ## Индивидуальное задание
 ### Получение AST
 Исходный файл lambda.cpp
+
 ![lambda_cpp.png](images/%20INDIVIDUAL_PART/lambda_cpp.png)
 
 Команда для получения AST: clang++ -Xclang -ast-dump -fsyntax-only lambda.cpp
+
 ![AST_cpp.png](images/%20INDIVIDUAL_PART/AST_cpp.png)
 
 ### Получение IR для -O0 
 Получение IR для -O0: clang++ -O0 -S -emit-llvm lambda.cpp -o lambda_O0.ll  
+
 ![IR_0O_cpp.png](images/%20INDIVIDUAL_PART/IR_0O_cpp.png)
 ![lambda_O0_ll.png](images/%20INDIVIDUAL_PART/lambda_O0_ll.png)
 ![lambda_O0_ll1.png](images/%20INDIVIDUAL_PART/lambda_O0_ll1.png)
@@ -151,6 +164,7 @@ CFG для функции main и square:
 
 ### Получение IR для -O2
 Получение IR для -O2: clang++ -O2 -S -emit-llvm lambda.cpp -o lambda_O2.ll
+
 ![IR_02.png](images/%20INDIVIDUAL_PART/IR_02.png)
 ![IR_02_cpp.png](images/%20INDIVIDUAL_PART/IR_02_cpp.png)
 
@@ -161,11 +175,13 @@ CFG для функции main и square:
 
 
 ### Построение CFG
-Построение CFG -O2 для лямбды: opt -passes=dot-cfg -disable-output lambda_O2.ll  
+Построение CFG -O2 для лямбды: opt -passes=dot-cfg -disable-output lambda_O2.ll 
+
 ![CFG_0.png](images/%20INDIVIDUAL_PART/CFG_0.png)
 ![CFG_01.png](images/%20INDIVIDUAL_PART/CFG_01.png)
 
 Построение CFG -O0 для лямбды: opt -passes=dot-cfg -disable-output lambda_O0.ll
+
 ![CFG_2.png](images/%20INDIVIDUAL_PART/CFG_2.png)
 ![CFG_02.png](images/%20INDIVIDUAL_PART/CFG_02.png)
 
