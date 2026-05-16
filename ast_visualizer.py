@@ -13,6 +13,7 @@ class ASTVisualizer(QDialog):
 
         self.COLORS = {
             "bg": QColor("#FFFFFF"),
+            "terminal_bg": QColor("#FFD1DC"),
             "border": QColor("#000000"),
             "text": QColor("#000000"),
             "line": QColor("#000000")
@@ -50,8 +51,12 @@ class ASTVisualizer(QDialog):
 
         if isinstance(node, LetNode):
             root = self._create_node("LET DECLARATION")
+
+            id_node = self._create_node("IDENTIFIER")
             name_val = node.name_tok.lexeme if node.name_tok else "???"
-            root["children"].append(self._create_node(f"ID: {name_val}"))
+            id_node["children"].append(self._create_node(name_val))
+            root["children"].append(id_node)
+
             if node.lambda_node:
                 root["children"].append(self.build_detailed_tree(node.lambda_node))
             return root
@@ -59,13 +64,15 @@ class ASTVisualizer(QDialog):
         elif isinstance(node, LambdaNode):
             root = self._create_node("LAMBDA FUNCTION")
             if node.params:
-                params_root = self._create_node(f"PARAMS ({len(node.params)})")
+                params_root = self._create_node("PARAMS")
                 for p in node.params:
                     params_root["children"].append(self.build_detailed_tree(p))
                 root["children"].append(params_root)
 
+            returns_node = self._create_node("RETURNS")
             ret_type = node.return_type_tok.lexeme if node.return_type_tok else "infer"
-            root["children"].append(self._create_node(f"RETURNS: {ret_type}"))
+            returns_node["children"].append(self._create_node(ret_type))
+            root["children"].append(returns_node)
 
             if node.body:
                 body_root = self._create_node("BODY")
@@ -74,22 +81,37 @@ class ASTVisualizer(QDialog):
             return root
 
         elif isinstance(node, ParamNode):
+            param_root = self._create_node("PARAM")
+
+            id_node = self._create_node("IDENTIFIER")
             name = node.name_tok.lexeme if node.name_tok else "?"
+            id_node["children"].append(self._create_node(name))
+
+            type_node = self._create_node("TYPE")
             ptype = node.type_tok.lexeme if node.type_tok else "?"
-            return self._create_node(f"{name} : {ptype}")
+            type_node["children"].append(self._create_node(ptype))
+
+            param_root["children"].extend([id_node, type_node])
+            return param_root
 
         elif isinstance(node, BinOpNode):
+            root = self._create_node("OPERATOR")
             op_str = node.op_tok.lexeme if node.op_tok else "?"
-            root = self._create_node(f"OPERATOR: {op_str}")
+            root["children"].append(self._create_node(op_str))
+
             if node.left: root["children"].append(self.build_detailed_tree(node.left))
             if node.right: root["children"].append(self.build_detailed_tree(node.right))
             return root
 
         elif isinstance(node, VarNode):
-            return self._create_node(node.token.lexeme)
+            id_node = self._create_node("IDENTIFIER")
+            id_node["children"].append(self._create_node(node.token.lexeme))
+            return id_node
 
         elif isinstance(node, LiteralNode):
-            return self._create_node(f"VALUE: {node.token.lexeme}")
+            lit_node = self._create_node("LITERAL")
+            lit_node["children"].append(self._create_node(node.token.lexeme))
+            return lit_node
 
         return None
 
@@ -126,8 +148,13 @@ class ASTVisualizer(QDialog):
         rect_x = node["x"] - self.NODE_WIDTH / 2
         rect_y = node["y"] - self.NODE_HEIGHT / 2
 
+        if not node["children"]:
+            bg_brush = QBrush(self.COLORS["terminal_bg"])
+        else:
+            bg_brush = QBrush(self.COLORS["bg"])
+
         self.scene.addRect(rect_x, rect_y, self.NODE_WIDTH, self.NODE_HEIGHT,
-                           QPen(self.COLORS["border"], 2), QBrush(self.COLORS["bg"]))
+                           QPen(self.COLORS["border"], 2), bg_brush)
 
         label_item = QGraphicsTextItem(node["label"])
         label_item.setFont(QFont("Segoe UI", 12, QFont.Weight.Bold))
