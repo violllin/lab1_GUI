@@ -53,6 +53,7 @@ STRINGS = {
         "msg_regex_found": "Найдено совпадений: {}",
         "tab_ast": "Дерево AST",
         "menu_show_ast": "Показать AST",
+        "tab_opimization": "Оптимизация",
         "text_items": ["Постановка задачи", "Грамматика", "Классификация грамматики", "Метод анализа", "Тестовый пример", "Список литературы", "Исходный код"]
     },
     "en": {
@@ -107,6 +108,7 @@ STRINGS = {
         "msg_no_data": "No data to search",
         "tab_ast": "AST Tree",
         "menu_show_ast": "Show AST",
+        "tab_opimization": "Optimization",
         "text_items": ["Task Problem", "Grammar", "Grammar Classification", "Analysis Method", "Test Case", "References", "Source Code"]
     }
 }

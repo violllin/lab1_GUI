@@ -65,14 +65,30 @@ return b;
 
 ## Общее задание
 ### Установка среды
+Работа выполнялась в среде Ubuntu 24.04.   
+Установлены следующие инструменты:
+- clang - компилятор языка C/C++;  
+- llvm - инструменты анализа и оптимизации кода;  
+- opt - инструмент для работы с LLVM IR и применения оптимизаций;  
+- Graphviz - инструмент для визуализации кода.  
+>Команды установки:   
+> sudo apt install clang llvm  
+> sudo apt install opt  
+> sudo apt install graphviz  
+
 ![dependency1.png](images/GENERAL_PART/dependency1.png)
 ![dependency2.png](images/GENERAL_PART/dependency2.png)
 ![dependency3.png](images/GENERAL_PART/dependency3.png)
 
 
 ### Работа с AST
+Исходный файл main.c
 ![main.png](images/GENERAL_PART/main.png)
-![AST_command.png](images/GENERAL_PART/AST_command.png)
+
+> Команда: clang -Xclang -ast-dump -fsyntax-only main.c
+> [AST_command.png](images/GENERAL_PART/AST_command.png)
+
+Получение AST:
 ![AST.png](images/GENERAL_PART/AST.png)
 
 

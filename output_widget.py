@@ -11,8 +11,13 @@ class OutputPanel(QTabWidget):
         self.ast_display.setReadOnly(True)
         self.ast_display.setFont(QFont("Consolas", 10))
 
+        self.tac_display = QTextEdit()
+        self.tac_display.setReadOnly(True)
+        self.tac_display.setFont(QFont("Consolas", 10))
+
         self.addTab(self.output_table, "Вывод")
         self.addTab(self.ast_display, "Дерево AST")
+        self.addTab(self.tac_display, "TAC")
 
         self.retranslate("ru")
 
@@ -33,6 +38,7 @@ class OutputPanel(QTabWidget):
         s = STRINGS[lang]
         self.setTabText(0, s.get("tab_lexer", "Вывод"))
         self.setTabText(1, s.get("tab_ast", "Дерево AST"))
+        self.setTabText(2, s.get("tab_opimization", "Оптимизация"))
 
 
         headers = [

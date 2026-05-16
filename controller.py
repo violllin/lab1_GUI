@@ -11,6 +11,7 @@ from antlr4.error.ErrorListener import ErrorListener
 from antlr4 import InputStream, CommonTokenStream
 from antlr_tool.MyGrammarLexer import MyGrammarLexer
 from antlr_tool.MyGrammarParser import MyGrammarParser
+from ir_compiler import TACGenerator, TACOptimizer
 
 class MyAntlrErrorListener(ErrorListener):
     def __init__(self):
@@ -242,6 +243,40 @@ class EditorController:
                 table.setItem(row, col, item)
 
         msg = STRINGS[self.lang]["msg_errors_found"].format(len(all_errors))
+
+        if self.current_ast:
+            try:
+                generator = TACGenerator()
+                raw_ir = generator.generate(self.current_ast)
+
+                folded_ir, cf_count = TACOptimizer.fold_constants(raw_ir)
+                final_ir, dce_count = TACOptimizer.eliminate_dead_code(folded_ir)
+
+                calc_result = TACOptimizer.get_final_result(final_ir)
+
+                # Формируем отчет
+                report = "ИСХОДНЫЙ ТРЕХАДРЕСНЫЙ КОД\n"
+                report += "\n".join([f"{i + 1}: {line}" for i, line in enumerate(raw_ir)])
+
+                report += f"\n\nОПТИМИЗАЦИЯ 1: СВЕРТКА КОНСТАНТ\n"
+                report += f"Применено оптимизаций: {cf_count}\n\n"
+                report += "\n".join([f"{i + 1}: {line}" for i, line in enumerate(folded_ir)])
+
+                report += f"\n\nОПТИМИЗАЦИЯ 2: УДАЛЕНИЕ МЕРТВОГО КОДА\n"
+                report += f"Удалено инструкций: {dce_count}\n\n"
+                report += "\n".join([f"{i + 1}: {line}" for i, line in enumerate(final_ir)])
+
+                report += "\n\nИТОГОВЫЙ РЕЗУЛЬТАТ\n"
+                report += f"Всего оптимизаций применено: {cf_count + dce_count}\n"
+                report += f"Размер кода: {len(final_ir)} инструкций\n\n"
+
+                report += f"Результат вычисления= {calc_result}"
+
+                self.ui.output_panel.tac_display.setPlainText(report)
+
+            except Exception as e:
+                self.ui.output_panel.tac_display.setPlainText(f"Ошибка генерации IR: {str(e)}")
+
         self.ui.statusBar().showMessage(msg, 5000)
 
 
