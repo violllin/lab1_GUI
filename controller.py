@@ -238,8 +238,7 @@ class EditorController:
 
                     report += "\n\nИТОГОВЫЙ РЕЗУЛЬТАТ\n"
                     report += f"Всего оптимизаций применено: {cf_count + dce_count}\n"
-                    report += f"Размер кода: {len(final_ir)} инструкций\n\n"
-
+                    report += f"Размер кода: {len(final_ir)} инструкций\n"
                     report += f"Результат вычисления = {calc_result}"
 
                     self.ui.output_panel.tac_display.setPlainText(report)

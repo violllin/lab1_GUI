@@ -20,7 +20,7 @@ class TACGenerator:
         node_type = type(node).__name__
 
         if node_type == "LetNode":
-            self.instructions.append(f"define {node.name_tok.lexeme}:")
+            self.instructions.append(f"lambda {node.name_tok.lexeme}:")
             self.visit(node.lambda_node)
 
         elif node_type == "LambdaNode":
